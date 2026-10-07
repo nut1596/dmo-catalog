@@ -28,7 +28,8 @@ function render() {
     const body = document.createElement("div"); body.className = "card-body";
     const category = document.createElement("div"); category.className = "category";
     category.textContent = product.kind === "seal" ? "SEAL · " + product.category :
-      product.kind === "money" ? "เงิน T" : "ITEM";
+      product.kind === "money" ? "เงิน T" : product.kind === "service" ?
+      "บริการ · " + product.category : "ITEM";
     const title = document.createElement("h3"); title.textContent = product.name;
     const availability = document.createElement("span"); availability.className = "availability";
     availability.textContent = product.available ? "มีสินค้า" : "สินค้าหมด";
