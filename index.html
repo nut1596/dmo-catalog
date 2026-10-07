@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; img-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="color-scheme" content="light">
+  <title>DMO Store · รายการสินค้า</title>
+  <meta name="description" content="รายการซีลและไอเทมที่พร้อมจำหน่าย">
+  <link rel="stylesheet" href="./style.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">DMO STORE / PRODUCT CATALOG</div>
+      <h1>ของพร้อมส่ง<br><span>เลือกดูได้เลย</span></h1>
+      <p>รายการซีลและไอเทมจากคลังร้าน · ราคาจะแสดงตามหน่วยของสินค้า</p>
+      <div class="hero-foot"><span id="updated">กำลังโหลดรายการ…</span><span>แค็ตตาล็อกสำหรับดูสินค้าเท่านั้น</span></div>
+    </div>
+    <div class="hero-art" aria-hidden="true"><span>✦</span><span>◈</span><span>✦</span></div>
+  </header>
+  <main>
+    <section class="toolbar" aria-label="ค้นหาสินค้า">
+      <div class="toolbar-title"><h2>สินค้าทั้งหมด</h2><p id="count"></p></div>
+      <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="ค้นหาชื่อสินค้า…" autocomplete="off"></label>
+      <div class="filters" id="filters"><button class="active" data-filter="all" type="button">ทั้งหมด</button><button data-filter="seal" type="button">ซีล</button><button data-filter="item" type="button">ไอเทม</button></div>
+    </section>
+    <p id="message" class="message" role="status">กำลังโหลดสินค้า…</p>
+    <div id="products" class="grid" aria-live="polite"></div>
+  </main>
+  <footer>DMO Store · ข้อมูลสินค้าอาจเปลี่ยนระหว่างวัน กรุณายืนยันราคาและจำนวนก่อนซื้อ</footer>
+</body>
+</html>
