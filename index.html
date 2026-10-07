@@ -10,6 +10,7 @@
   <meta name="description" content="แค็ตตาล็อกซีล ไอเทม และเงิน T จากคลังร้าน">
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./availability.css">
+  <link rel="stylesheet" href="./catalog-controls.css">
   <script src="./app.js" defer></script>
 </head>
 <body>
@@ -17,8 +18,8 @@
     <div class="hero-inner">
       <div class="eyebrow">DMO STORE / PRODUCT CATALOG</div>
       <h1>ของในร้าน<br><span>เลือกดูได้เลย</span></h1>
-      <p>ซีล ไอเทม บริการ และเงิน T จากหลังบ้านร้าน · สินค้าหมดก็ยังดูรายการได้</p>
-      <div class="hero-foot"><span id="updated">กำลังโหลดรายการ…</span><span>แค็ตตาล็อกสำหรับดูสินค้าเท่านั้น</span></div>
+      <p>ซีล ไอเทม บริการ และเงิน T จากหลังบ้านร้าน · เลือกสินค้าแล้วคัดลอกรายการส่งแชต</p>
+      <div class="hero-foot"><span id="updated">กำลังโหลดรายการ…</span><span>เลือกสินค้า · คัดลอก · ส่งแชต · รอร้านยืนยัน</span></div>
     </div>
     <div class="hero-art" aria-hidden="true"><span>✦</span><span>◈</span><span>✦</span></div>
   </header>
@@ -27,9 +28,27 @@
       <div class="toolbar-title"><h2>สินค้าทั้งหมด</h2><p id="count"></p></div>
       <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="ค้นหาชื่อสินค้า…" autocomplete="off"></label>
       <div class="filters" id="filters"><button class="active" data-filter="all" type="button">ทั้งหมด</button><button data-filter="seal" type="button">ซีล</button><button data-filter="item" type="button">ไอเทม</button><button data-filter="service" type="button">บริการ</button><button data-filter="money" type="button">เงิน T</button></div>
+      <div class="catalog-controls">
+        <label>สายซีล <select id="seal-line"><option value="all">ทุกสาย</option></select></label>
+        <label>เรียงตาม <select id="sort"><option value="name">ชื่อ ก–ฮ</option><option value="price-low">ราคาน้อยไปมาก</option><option value="price-high">ราคามากไปน้อย</option></select></label>
+        <label class="stock-check"><input id="available-only" type="checkbox"> เฉพาะที่มีสินค้า</label>
+      </div>
     </section>
-    <p id="message" class="message" role="status">กำลังโหลดสินค้า…</p>
-    <div id="products" class="grid" aria-live="polite"></div>
+    <div class="shop-layout">
+      <section class="catalog-area" aria-label="รายการสินค้า">
+        <p id="message" class="message" role="status">กำลังโหลดสินค้า…</p>
+        <div id="products" class="grid" aria-live="polite"></div>
+      </section>
+      <aside class="cart" aria-label="รายการที่เลือก">
+        <div class="cart-head"><h2>🛒 รายการที่เลือก</h2><span id="cart-count">0 รายการ</span></div>
+        <div id="cart-items" class="cart-items"><p class="cart-empty">ยังไม่ได้เลือกสินค้า</p></div>
+        <div class="cart-summary"><div><span>รวมก่อนส่วนลด</span><strong id="subtotal">0 ฿</strong></div><div><span>ลด 5%</span><strong id="discount">0 ฿</strong></div><div class="cart-total"><span>ยอดประมาณ</span><strong id="total">0 ฿</strong></div><p id="reward"></p></div>
+        <div class="customer-fields"><label>ชื่อเทมเมอร์<input id="tamer" autocomplete="off" placeholder="ชื่อในเกม"></label><label>ชื่อ Facebook<input id="contact" autocomplete="off" placeholder="ชื่อที่ใช้ติดต่อ"></label></div>
+        <button id="copy-order" class="copy-order" type="button" disabled>คัดลอกรายการเพื่อส่งร้าน</button>
+        <p id="copy-status" class="copy-status" role="status">ร้านจะยืนยันสต็อกและยอดอีกครั้งก่อนชำระเงิน</p>
+        <details><summary>วิธีส่งรายการ</summary><ol><li>เลือกสินค้าและจำนวน</li><li>กรอกชื่อเทมเมอร์กับ Facebook</li><li>กดคัดลอก แล้ววางข้อความในแชต Arnas Arkeh</li><li>รอร้านยืนยันยอดก่อนโอนเงิน</li></ol></details>
+      </aside>
+    </div>
   </main>
   <footer>DMO Store · ข้อมูลสินค้าอาจเปลี่ยนระหว่างวัน กรุณายืนยันราคาและจำนวนก่อนซื้อ</footer>
 </body>
