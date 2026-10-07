@@ -7,16 +7,17 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; img-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <meta name="color-scheme" content="light">
   <title>DMO Store · รายการสินค้า</title>
-  <meta name="description" content="รายการซีลและไอเทมที่พร้อมจำหน่าย">
+  <meta name="description" content="แค็ตตาล็อกซีล ไอเทม และเงิน T จากคลังร้าน">
   <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./availability.css">
   <script src="./app.js" defer></script>
 </head>
 <body>
   <header class="hero">
     <div class="hero-inner">
       <div class="eyebrow">DMO STORE / PRODUCT CATALOG</div>
-      <h1>ของพร้อมส่ง<br><span>เลือกดูได้เลย</span></h1>
-      <p>รายการซีลและไอเทมจากคลังร้าน · ราคาจะแสดงตามหน่วยของสินค้า</p>
+      <h1>ของในร้าน<br><span>เลือกดูได้เลย</span></h1>
+      <p>ซีล ไอเทม และเงิน T จากคลังร้าน · สินค้าหมดก็ยังดูรายการได้</p>
       <div class="hero-foot"><span id="updated">กำลังโหลดรายการ…</span><span>แค็ตตาล็อกสำหรับดูสินค้าเท่านั้น</span></div>
     </div>
     <div class="hero-art" aria-hidden="true"><span>✦</span><span>◈</span><span>✦</span></div>
@@ -25,7 +26,7 @@
     <section class="toolbar" aria-label="ค้นหาสินค้า">
       <div class="toolbar-title"><h2>สินค้าทั้งหมด</h2><p id="count"></p></div>
       <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="ค้นหาชื่อสินค้า…" autocomplete="off"></label>
-      <div class="filters" id="filters"><button class="active" data-filter="all" type="button">ทั้งหมด</button><button data-filter="seal" type="button">ซีล</button><button data-filter="item" type="button">ไอเทม</button></div>
+      <div class="filters" id="filters"><button class="active" data-filter="all" type="button">ทั้งหมด</button><button data-filter="seal" type="button">ซีล</button><button data-filter="item" type="button">ไอเทม</button><button data-filter="money" type="button">เงิน T</button></div>
     </section>
     <p id="message" class="message" role="status">กำลังโหลดสินค้า…</p>
     <div id="products" class="grid" aria-live="polite"></div>

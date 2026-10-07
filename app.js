@@ -14,6 +14,7 @@ function render() {
   const fragment = document.createDocumentFragment();
   for (const product of shown) {
     const card = document.createElement("article"); card.className = "card";
+    if (!product.available) card.classList.add("unavailable");
     const imageBox = document.createElement("div"); imageBox.className = "card-image";
     if (product.image && /^assets\/products\/[a-f0-9]{24}\.webp$/.test(product.image)) {
       const image = document.createElement("img");
@@ -26,13 +27,17 @@ function render() {
     }
     const body = document.createElement("div"); body.className = "card-body";
     const category = document.createElement("div"); category.className = "category";
-    category.textContent = product.kind === "seal" ? "SEAL · " + product.category : "ITEM";
+    category.textContent = product.kind === "seal" ? "SEAL · " + product.category :
+      product.kind === "money" ? "เงิน T" : "ITEM";
     const title = document.createElement("h3"); title.textContent = product.name;
+    const availability = document.createElement("span"); availability.className = "availability";
+    availability.textContent = product.available ? "มีสินค้า" : "สินค้าหมด";
     const price = document.createElement("div"); price.className = "price";
     const amount = document.createElement("strong");
-    amount.textContent = new Intl.NumberFormat("th-TH", {minimumFractionDigits: 0, maximumFractionDigits: 2}).format(product.price) + " ฿";
+    amount.textContent = Number.isFinite(product.price) && product.price > 0 ?
+      new Intl.NumberFormat("th-TH", {minimumFractionDigits: 0, maximumFractionDigits: 2}).format(product.price) + " ฿" : "สอบถามราคา";
     const unit = document.createElement("span"); unit.textContent = "ต่อ " + product.unit;
-    price.append(amount, unit); body.append(category, title, price);
+    price.append(amount, unit); body.append(category, title, availability, price);
     card.append(imageBox, body); fragment.append(card);
   }
   cards.append(fragment);
