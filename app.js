@@ -127,7 +127,7 @@ function totals() {
     const value = linePrice(product, amount); subtotal += value;
     if (product.kind === "seal" || product.kind === "set") sealSubtotal += value;
   }
-  const discount = Math.round(subtotal * 5) / 100;
+  const discount = Math.round(sealSubtotal * 5) / 100;
   return {subtotal, discount, total: subtotal - discount,
     reward: Math.floor(sealSubtotal / 100) * 150};
 }
