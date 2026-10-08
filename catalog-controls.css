@@ -4,4 +4,5 @@
 .catalog-controls select{border:1px solid #cbdfea;border-radius:9px;padding:8px 10px;background:#fff;color:#17334c;max-width:175px}
 .catalog-controls .stock-check{margin-left:auto;cursor:pointer}
 .catalog-controls input{accent-color:#0878bd;width:16px;height:16px}
+.catalog-controls .refresh{border:1px solid #cbdfea;border-radius:9px;background:#f5fafe;color:#246084;padding:8px 11px;font-size:12px;font-weight:700}
 @media(max-width:620px){.catalog-controls{gap:8px}.catalog-controls .stock-check{margin-left:0}.catalog-controls label{font-size:11px}.catalog-controls select{max-width:145px}}
