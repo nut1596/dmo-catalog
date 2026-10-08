@@ -1,4 +1,8 @@
 .catalog-controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-top:1px solid #e6eef5;padding-top:15px}
+.set-line-filters{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:7px;padding:12px 0;border-top:1px solid #e6eef5}
+.set-line-filters[hidden]{display:none}
+.set-line-filters button{border:1px solid #b9d8e8;background:#f6fbfe;color:#276783;border-radius:9px;padding:8px 13px;font-size:12px;font-weight:700}
+.set-line-filters button.active{background:#0b77ba;color:#fff;border-color:#0b77ba}
 .catalog-controls label{display:flex;align-items:center;gap:7px;color:#55738a;font-size:12px;font-weight:700}
 .catalog-controls label[hidden]{display:none}
 .catalog-controls select{border:1px solid #cbdfea;border-radius:9px;padding:8px 10px;background:#fff;color:#17334c;max-width:175px}

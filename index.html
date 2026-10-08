@@ -8,10 +8,10 @@
   <meta name="color-scheme" content="light">
   <title>DMO Store · รายการสินค้า</title>
   <meta name="description" content="แค็ตตาล็อกสินค้า DMO Store เลือกสินค้าและคัดลอกรายการส่งร้าน">
-  <link rel="stylesheet" href="./style.css?v=original-20261008">
-  <link rel="stylesheet" href="./availability.css?v=original-20261008">
-  <link rel="stylesheet" href="./catalog-controls.css?v=original-20261008">
-  <script src="./app.js?v=original-20261008" defer></script>
+  <link rel="stylesheet" href="./style.css?v=sets-20261008">
+  <link rel="stylesheet" href="./availability.css?v=sets-20261008">
+  <link rel="stylesheet" href="./catalog-controls.css?v=sets-20261008">
+  <script src="./app.js?v=sets-20261008" defer></script>
 </head>
 <body>
   <header class="hero">
@@ -29,13 +29,14 @@
       <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="ค้นหาชื่อสินค้า…" autocomplete="off"></label>
       <div class="filters" id="filters" aria-label="หมวดสินค้า">
         <button class="active" data-filter="all" type="button">ทั้งหมด</button>
+        <button data-filter="set" type="button">เซ็ตซีล</button>
         <button data-filter="seal" type="button">ซีล</button>
         <button data-filter="item" type="button">ไอเทม</button>
         <button data-filter="service" type="button">บริการ</button>
         <button data-filter="money" type="button">เงิน T</button>
-        <button data-filter="set" type="button">เซ็ตซีล</button>
         <button data-filter="favorite" type="button">รายการโปรด <span id="favorite-count">(0)</span></button>
       </div>
+      <div id="set-line-filters" class="set-line-filters" aria-label="เลือกสายเซ็ตซีล" hidden></div>
       <div class="catalog-controls">
         <label class="line-control" hidden>สายซีล <select id="seal-line"><option value="all">ทุกสาย</option></select></label>
         <label class="section-control" hidden>หมวดย่อย <select id="section"><option value="all">ทุกหมวดย่อย</option><option value="NORMAL">ปกติ</option><option value="BASE_HARD">เบสยาก</option><option value="SUSA">ซูซา</option></select></label>
@@ -44,21 +45,27 @@
         <button id="refresh" class="refresh" type="button">↻ โหลดข้อมูลล่าสุด</button>
       </div>
     </section>
-    <p id="message" class="message" role="status">กำลังโหลดสินค้า…</p>
-    <div id="products" class="grid" aria-live="polite"></div>
-    <button id="show-more" class="show-more" type="button" hidden>แสดงสินค้าเพิ่ม</button>
-    <section class="cart" id="cart" aria-label="รายการที่เลือก">
+    <div class="shop-layout">
+      <div class="catalog-area">
+        <p id="message" class="message" role="status">กำลังโหลดสินค้า…</p>
+        <div id="products" class="grid" aria-live="polite"></div>
+        <button id="show-more" class="show-more" type="button" hidden>แสดงสินค้าเพิ่ม</button>
+      </div>
+      <section class="cart" id="cart" aria-label="รายการที่เลือก">
       <div class="cart-head"><div><span class="eyebrow">YOUR SELECTION</span><h2>รายการที่เลือก</h2></div><span id="cart-count">0 รายการ</span></div>
       <div id="cart-items" class="cart-items"><p class="cart-empty">ยังไม่ได้เลือกสินค้า</p></div>
       <div class="cart-checkout">
         <div class="cart-summary"><div><span>รวมก่อนส่วนลด</span><strong id="subtotal">0 ฿</strong></div><div><span>ลด 5%</span><strong id="discount">0 ฿</strong></div><div class="cart-total"><span>ยอดประมาณ</span><strong id="total">0 ฿</strong></div><p id="reward"></p></div>
         <div class="customer-fields"><label>ชื่อเทมเมอร์<input id="tamer" autocomplete="off" placeholder="ชื่อในเกม"></label><label>ชื่อ Facebook<input id="contact" autocomplete="off" placeholder="ชื่อที่ใช้ติดต่อ"></label></div>
         <button id="copy-order" class="copy-order" type="button" disabled>คัดลอกรายการเพื่อส่งร้าน</button>
+        <a class="contact-link" href="https://m.me/kakachi.kung.5" target="_blank" rel="noopener noreferrer">เปิดแชตส่งข้อความหาร้าน ↗</a>
+        <a class="contact-fallback" href="https://www.facebook.com/kakachi.kung.5/" target="_blank" rel="noopener noreferrer">เปิดโปรไฟล์ Facebook หากแชตไม่เปิด</a>
         <p id="copy-status" class="copy-status" role="status">ร้านจะยืนยันสต็อกและยอดอีกครั้งก่อนชำระเงิน</p>
         <details><summary>วิธีส่งรายการ</summary><ol><li>เลือกสินค้าและจำนวน</li><li>กรอกชื่อเทมเมอร์กับ Facebook</li><li>กดคัดลอก แล้ววางข้อความในแชตร้าน</li><li>รอร้านยืนยันยอดก่อนโอนเงิน</li></ol></details>
         <button id="clear-cart" class="clear-cart" type="button">ล้างรายการ</button>
       </div>
-    </section>
+      </section>
+    </div>
   </main>
   <footer>DMO Store · ข้อมูลสินค้าอาจเปลี่ยนระหว่างวัน กรุณายืนยันราคาและจำนวนก่อนซื้อ</footer>
   <a href="#cart" class="mobile-cart">🛒 รายการที่เลือก <span id="mobile-cart-count">0</span></a>
