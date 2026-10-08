@@ -4,7 +4,7 @@ const cards = $("#products"), message = $("#message"), search = $("#search");
 const number = new Intl.NumberFormat("th-TH", {maximumFractionDigits: 2});
 const baht = value => number.format(Math.round(value * 100) / 100) + " ฿";
 const cart = new Map();
-let products = [], kind = "seal", visibleLimit = 60;
+let products = [], kind = "all", visibleLimit = 60;
 let favorites;
 try { favorites = new Set(JSON.parse(localStorage.getItem("dmo-catalog-favorites") || "[]")); }
 catch (_) { favorites = new Set(); }
@@ -39,7 +39,8 @@ function renderProducts() {
   const query = search.value.trim().toLocaleLowerCase("th");
   const line = $("#seal-line").value, section = $("#section").value;
   const availableOnly = $("#available-only").checked;
-  const shown = products.filter(product => (kind === "favorite" ? favorites.has(product.id) : product.kind === kind) &&
+  const shown = products.filter(product => (kind === "favorite" ? favorites.has(product.id) :
+    kind === "all" || product.kind === kind) &&
     (line === "all" || product.category === line) &&
     (section === "all" || (product.section || "NORMAL") === section) &&
     (!availableOnly || product.available) &&
@@ -200,7 +201,7 @@ $("#filters").addEventListener("click", event => {
   if (kind !== "seal") $("#section").value = "all";
   $("#section").closest("label").hidden = kind !== "seal";
   $("#seal-line").closest("label").hidden = !(["seal", "set", "favorite"].includes(kind));
-  $("#catalog-title").textContent = ({seal: "รายการซีล", item: "รายการไอเทม", service: "รายการบริการ",
+  $("#catalog-title").textContent = ({all: "สินค้าทั้งหมด", seal: "รายการซีล", item: "รายการไอเทม", service: "รายการบริการ",
     money: "เงิน T", set: "เซ็ตซีล", favorite: "รายการโปรด"})[kind];
   visibleLimit = 60;
   renderProducts();
