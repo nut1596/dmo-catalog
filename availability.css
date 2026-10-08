@@ -1,8 +1,8 @@
 /* Availability status indicator styles (Clean International Standard) */
 .unavailable .card-image img,
 .unavailable .placeholder {
-  filter: grayscale(0.85);
-  opacity: 0.65;
+  filter: none;
+  opacity: 1;
 }
 
 .availability {
