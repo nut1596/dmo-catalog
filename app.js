@@ -85,7 +85,10 @@ function renderProducts() {
     top.append(title, favorite);
     const selector = element("div", "product-select");
     const input = element("input"); input.type = "number"; input.min = "1";
-    input.max = "1000000"; input.value = defaultQuantity(product);
+    const def = defaultQuantity(product);
+    input.max = "1000000"; input.value = def;
+    input.defaultValue = def;
+    input.setAttribute("value", def);
     input.setAttribute("aria-label", "จำนวน" + unitLabel(product) + "ของ" + product.name);
     const add = element("button", "", "เพิ่มรายการ"); add.type = "button";
     add.disabled = !(product.price > 0);
@@ -94,8 +97,17 @@ function renderProducts() {
       if (!amount || (cart.get(product.id) || 0) + amount > 1000000) {
         input.setCustomValidity("กรุณากรอกจำนวน 1–1,000,000"); input.reportValidity(); return;
       }
-      input.setCustomValidity(""); cart.set(product.id, (cart.get(product.id) || 0) + amount);
-      renderCart(); $("#copy-status").textContent = "เพิ่ม " + product.name + " แล้ว · ตรวจรายการก่อนคัดลอก";
+      input.setCustomValidity("");
+      const currentTotal = (cart.get(product.id) || 0) + amount;
+      cart.set(product.id, currentTotal);
+      renderCart();
+      $("#copy-status").textContent = "เพิ่ม " + product.name + " (" + number.format(currentTotal) + " " + unitLabel(product) + ") แล้ว";
+      add.textContent = "✓ เพิ่มแล้ว (" + number.format(currentTotal) + ")";
+      add.classList.add("added");
+      setTimeout(() => {
+        add.textContent = "เพิ่มรายการ";
+        add.classList.remove("added");
+      }, 900);
     });
     selector.append(input, add);
     body.append(top, element("div", "category", label), price,
@@ -146,13 +158,15 @@ function renderCart() {
     remove.addEventListener("click", () => { cart.delete(id); renderCart(); });
     const input = element("input"); input.type = "number"; input.min = "1";
     input.max = "1000000"; input.value = amount;
+    input.defaultValue = amount;
+    input.setAttribute("value", amount);
     input.setAttribute("aria-label", "จำนวน" + product.name);
     input.addEventListener("change", () => {
       const next = quantity(input.value);
       if (!next) { input.value = cart.get(id); return; }
       cart.set(id, next); renderCart();
     });
-    row.append(title, remove, input, element("span", "line-total", baht(linePrice(product, amount))));
+    row.append(title, input, remove, element("span", "line-total", baht(linePrice(product, amount))));
     fragment.append(row);
   }
   if (!rows) fragment.append(element("p", "cart-empty", "ยังไม่ได้เลือกสินค้า"));
