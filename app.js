@@ -231,6 +231,11 @@ $("#set-line-filters").addEventListener("click", event => {
 $("#show-more").addEventListener("click", () => { visibleLimit += 60; renderProducts(); });
 $("#clear-cart").addEventListener("click", () => { cart.clear(); renderCart(); $("#copy-status").textContent = "ล้างรายการแล้ว"; });
 $("#refresh").addEventListener("click", () => { window.location.reload(); });
+if ("IntersectionObserver" in window) {
+  new IntersectionObserver(entries => {
+    $(".mobile-cart").classList.toggle("is-hidden", entries[0].isIntersecting);
+  }, {threshold: 0}).observe($("#cart"));
+}
 fetch("./catalog.json", {cache: "no-cache"}).then(response => {
   if (!response.ok) throw new Error("catalog unavailable");
   return response.json();
