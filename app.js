@@ -9,6 +9,10 @@ let favorites;
 try { favorites = new Set(JSON.parse(localStorage.getItem("dmo-catalog-favorites") || "[]")); }
 catch (_) { favorites = new Set(); }
 const sectionNames = {NORMAL: "ปกติ", BASE_HARD: "เบสยาก", SUSA: "ซูซา", SET: "เซ็ต"};
+function updateSetLineButtons() {
+  document.querySelectorAll("#set-line-filters button").forEach(button =>
+    button.classList.toggle("active", button.dataset.line === $("#seal-line").value));
+}
 
 function element(tag, className, content) {
   const node = document.createElement(tag);
@@ -46,19 +50,22 @@ function renderProducts() {
     (!availableOnly || product.available) &&
     String(product.name).toLocaleLowerCase("th").includes(query));
   const sort = $("#sort").value;
-  shown.sort((a, b) => sort === "price-low" ?
+  shown.sort((a, b) => kind === "all" && a.kind !== b.kind && (a.kind === "set" || b.kind === "set") ?
+    (a.kind === "set" ? -1 : 1) : sort === "price-low" ?
     ((a.price ?? Infinity) - (b.price ?? Infinity)) || a.name.localeCompare(b.name, "th") :
     sort === "price-high" ? ((b.price ?? -1) - (a.price ?? -1)) || a.name.localeCompare(b.name, "th") :
     a.name.localeCompare(b.name, "th"));
   const fragment = document.createDocumentFragment();
   for (const product of shown.slice(0, visibleLimit)) {
-    const card = element("article", "card" + (product.available ? "" : " unavailable"));
+    const card = element("article", "card" + (product.available ? "" : " unavailable") +
+      (product.kind === "set" ? " set-card" : ""));
     const imageBox = element("div", "card-image");
     if (product.image && /^assets\/products\/[a-f0-9]{24}\.webp$/.test(product.image)) {
       const image = element("img"); image.src = "./" + product.image;
       image.alt = product.name; image.loading = "lazy"; imageBox.append(image);
     } else imageBox.append(element("span", "placeholder", "◈"));
     const body = element("div", "card-body");
+    if (product.kind === "set") body.append(element("span", "set-badge", "เซ็ตซีล · " + product.category));
     const label = product.kind === "seal" ? product.category + " · " + (sectionNames[product.section] || "ปกติ") :
       product.kind === "set" ? product.category + " · เซ็ตซีล" :
       product.kind === "service" ? "บริการ · " + product.category :
@@ -95,8 +102,11 @@ function renderProducts() {
       element("span", "availability", product.available ? "มีสินค้า" : "สอบถามสต็อก"));
     if (product.kind === "set" && Array.isArray(product.members)) {
       const detail = element("details", "set-members");
-      detail.append(element("summary", "", "ดูสมาชิก " + product.members.length + " ชนิด · ชนิดละ " + number.format(product.leaves_per_seal) + " ใบ"),
-        element("p", "", product.members.join(" · ")));
+      detail.append(element("summary", "", "ดูรายชื่อในเซ็ต " + product.members.length + " ตัว · ตัวละ " +
+        number.format(product.leaves_per_seal) + " ใบ"));
+      const list = element("ol");
+      for (const member of product.members) list.append(element("li", "", member));
+      detail.append(list);
       body.append(detail);
     }
     body.append(selector);
@@ -188,7 +198,7 @@ $("#copy-order").addEventListener("click", async () => {
   }
   try {
     await navigator.clipboard.writeText(content);
-    $("#copy-status").textContent = "คัดลอกแล้ว! วางข้อความในแชต Arnas Arkeh เพื่อส่งร้าน";
+    $("#copy-status").textContent = "คัดลอกแล้ว! กดเปิด Facebook ร้าน แล้ววางข้อความส่งแชต";
   } catch (_) { $("#copy-status").textContent = "คัดลอกไม่สำเร็จ กรุณาอนุญาตคลิปบอร์ดแล้วลองอีกครั้ง"; }
 });
 $("#filters").addEventListener("click", event => {
@@ -200,7 +210,9 @@ $("#filters").addEventListener("click", event => {
   if (!(["seal", "set", "favorite"].includes(kind))) $("#seal-line").value = "all";
   if (kind !== "seal") $("#section").value = "all";
   $("#section").closest("label").hidden = kind !== "seal";
-  $("#seal-line").closest("label").hidden = !(["seal", "set", "favorite"].includes(kind));
+  $("#seal-line").closest("label").hidden = !(kind === "seal" || kind === "favorite");
+  $("#set-line-filters").hidden = kind !== "set";
+  updateSetLineButtons();
   $("#catalog-title").textContent = ({all: "สินค้าทั้งหมด", seal: "รายการซีล", item: "รายการไอเทม", service: "รายการบริการ",
     money: "เงิน T", set: "เซ็ตซีล", favorite: "รายการโปรด"})[kind];
   visibleLimit = 60;
@@ -208,7 +220,14 @@ $("#filters").addEventListener("click", event => {
 });
 search.addEventListener("input", () => { visibleLimit = 60; renderProducts(); });
 [$("#seal-line"), $("#section"), $("#sort"), $("#available-only")].forEach(control =>
-  control.addEventListener("change", () => { visibleLimit = 60; renderProducts(); }));
+  control.addEventListener("change", () => { visibleLimit = 60; updateSetLineButtons(); renderProducts(); }));
+$("#set-line-filters").addEventListener("click", event => {
+  const button = event.target.closest("button[data-line]");
+  if (!button) return;
+  $("#seal-line").value = button.dataset.line;
+  visibleLimit = 60;
+  updateSetLineButtons(); renderProducts();
+});
 $("#show-more").addEventListener("click", () => { visibleLimit += 60; renderProducts(); });
 $("#clear-cart").addEventListener("click", () => { cart.clear(); renderCart(); $("#copy-status").textContent = "ล้างรายการแล้ว"; });
 $("#refresh").addEventListener("click", () => { window.location.reload(); });
@@ -223,6 +242,14 @@ fetch("./catalog.json", {cache: "no-cache"}).then(response => {
     const option = element("option", "", line); option.value = line;
     $("#seal-line").append(option);
   }
+  const allSets = element("button", "", "ทุกสาย");
+  allSets.type = "button"; allSets.dataset.line = "all";
+  $("#set-line-filters").append(allSets);
+  for (const line of [...new Set(products.filter(p => p.kind === "set").map(p => p.category))].sort()) {
+    const button = element("button", "", line); button.type = "button";
+    button.dataset.line = line; $("#set-line-filters").append(button);
+  }
+  updateSetLineButtons();
   const updated = new Date(data.updated_at);
   $("#updated").textContent = Number.isNaN(updated.getTime()) ? "รายการสินค้าล่าสุด" :
     "อัปเดต " + updated.toLocaleString("th-TH", {dateStyle: "medium", timeStyle: "short"});
