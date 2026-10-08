@@ -50,13 +50,44 @@ function renderProducts() {
     (!availableOnly || product.available) &&
     String(product.name).toLocaleLowerCase("th").includes(query));
   const sort = $("#sort").value;
-  shown.sort((a, b) => kind === "all" && a.kind !== b.kind && (a.kind === "set" || b.kind === "set") ?
-    (a.kind === "set" ? -1 : 1) : sort === "price-low" ?
-    ((a.price ?? Infinity) - (b.price ?? Infinity)) || a.name.localeCompare(b.name, "th") :
-    sort === "price-high" ? ((b.price ?? -1) - (a.price ?? -1)) || a.name.localeCompare(b.name, "th") :
-    a.name.localeCompare(b.name, "th"));
+  shown.sort((a, b) => {
+    if (a.available !== b.available) return a.available ? -1 : 1;
+    if (kind === "all" && a.kind !== b.kind && (a.kind === "set" || b.kind === "set")) {
+      return a.kind === "set" ? -1 : 1;
+    }
+    if (sort === "price-low") {
+      return ((a.price ?? Infinity) - (b.price ?? Infinity)) || a.name.localeCompare(b.name, "th");
+    }
+    if (sort === "price-high") {
+      return ((b.price ?? -1) - (a.price ?? -1)) || a.name.localeCompare(b.name, "th");
+    }
+    return a.name.localeCompare(b.name, "th");
+  });
   const fragment = document.createDocumentFragment();
+  let renderedUnavailableDivider = false;
+
   for (const product of shown.slice(0, visibleLimit)) {
+    if (!product.available && !renderedUnavailableDivider) {
+      renderedUnavailableDivider = true;
+      const divider = element("div", "out-of-stock-divider");
+      const info = element("div", "divider-info");
+      const titleRow = element("div", "divider-title-row");
+      titleRow.append(
+        element("span", "divider-badge", "สินค้าหมด"),
+        element("h3", "", "สินค้าหมด (สามารถสอบถามได้)")
+      );
+      const desc = element("p", "", "รายการด้านล่างนี้หมดสต็อกชั่วคราว สามารถติดต่อสอบถามหรือสั่งจองกับทางร้านได้ครับ");
+      info.append(titleRow, desc);
+
+      const contactBtn = element("a", "divider-contact", "💬 ทักแชตสอบถาม ↗");
+      contactBtn.href = "https://m.me/kakachi.kung.5";
+      contactBtn.target = "_blank";
+      contactBtn.rel = "noopener noreferrer";
+
+      divider.append(info, contactBtn);
+      fragment.append(divider);
+    }
+
     const card = element("article", "card" + (product.available ? "" : " unavailable") +
       (product.kind === "set" ? " set-card" : ""));
     const imageBox = element("div", "card-image");
@@ -91,27 +122,42 @@ function renderProducts() {
     input.setAttribute("value", def);
     input.setAttribute("aria-label", "จำนวน" + unitLabel(product) + "ของ" + product.name);
     const add = element("button", "", "เพิ่มรายการ"); add.type = "button";
-    add.disabled = !(product.price > 0);
-    add.addEventListener("click", () => {
-      const amount = quantity(input.value);
-      if (!amount || (cart.get(product.id) || 0) + amount > 1000000) {
-        input.setCustomValidity("กรุณากรอกจำนวน 1–1,000,000"); input.reportValidity(); return;
-      }
-      input.setCustomValidity("");
-      const currentTotal = (cart.get(product.id) || 0) + amount;
-      cart.set(product.id, currentTotal);
-      renderCart();
-      $("#copy-status").textContent = "เพิ่ม " + product.name + " (" + number.format(currentTotal) + " " + unitLabel(product) + ") แล้ว";
-      add.textContent = "✓ เพิ่มแล้ว (" + number.format(currentTotal) + ")";
-      add.classList.add("added");
-      setTimeout(() => {
-        add.textContent = "เพิ่มรายการ";
-        add.classList.remove("added");
-      }, 900);
-    });
+
+    if (!product.available) {
+      add.disabled = true;
+      add.textContent = "หมด (สามารถสอบถามได้)";
+      add.title = "สินค้าหมดสต็อก สามารถทักแชตสอบถามกับทางร้านได้ครับ";
+      input.disabled = true;
+    } else if (!(product.price > 0)) {
+      add.disabled = true;
+      add.textContent = "สอบถามราคา";
+      input.disabled = true;
+    } else {
+      add.disabled = false;
+      add.textContent = "เพิ่มรายการ";
+      input.disabled = false;
+      add.addEventListener("click", () => {
+        const amount = quantity(input.value);
+        if (!amount || (cart.get(product.id) || 0) + amount > 1000000) {
+          input.setCustomValidity("กรุณากรอกจำนวน 1–1,000,000"); input.reportValidity(); return;
+        }
+        input.setCustomValidity("");
+        const currentTotal = (cart.get(product.id) || 0) + amount;
+        cart.set(product.id, currentTotal);
+        renderCart();
+        $("#copy-status").textContent = "เพิ่ม " + product.name + " (" + number.format(currentTotal) + " " + unitLabel(product) + ") แล้ว";
+        add.textContent = "✓ เพิ่มแล้ว (" + number.format(currentTotal) + ")";
+        add.classList.add("added");
+        setTimeout(() => {
+          add.textContent = "เพิ่มรายการ";
+          add.classList.remove("added");
+        }, 900);
+      });
+    }
+
     selector.append(input, add);
     body.append(top, element("div", "category", label), price,
-      element("span", "availability", product.available ? "มีสินค้า" : "สอบถามสต็อก"));
+      element("span", "availability", product.available ? "มีสินค้า" : "หมด (สามารถสอบถามได้)"));
     if (product.kind === "set" && Array.isArray(product.members)) {
       const detail = element("details", "set-members");
       detail.append(element("summary", "", "ดูรายชื่อในเซ็ต " + product.members.length + " ตัว · ตัวละ " +
@@ -125,7 +171,10 @@ function renderProducts() {
     card.append(imageBox, body); fragment.append(card);
   }
   cards.replaceChildren(fragment);
-  $("#count").textContent = "พบ " + shown.length + " รายการ" + (shown.length > visibleLimit ? " · แสดง " + visibleLimit + " รายการแรก" : "");
+  const inStockCount = shown.filter(p => p.available).length;
+  $("#count").textContent = "พบ " + shown.length + " รายการ" +
+    (inStockCount > 0 ? " (มีสินค้า " + inStockCount + " รายการ)" : " (สินค้าหมด)") +
+    (shown.length > visibleLimit ? " · แสดง " + visibleLimit + " รายการแรก" : "");
   $("#show-more").hidden = shown.length <= visibleLimit;
   message.hidden = shown.length > 0;
   if (!shown.length) message.textContent = products.length ? "ไม่พบสินค้าที่ค้นหา" : "ยังไม่มีสินค้าในแค็ตตาล็อก";

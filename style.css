@@ -488,9 +488,95 @@ main {
   color: #ffffff !important;
 }
 .product-select button:disabled {
-  background: #e2e8f0;
-  color: #94a3b8;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid var(--line);
   cursor: not-allowed;
+}
+
+/* Card Styling for Unavailable Products */
+.card.unavailable {
+  border-color: var(--line-subtle);
+  background: #fbfcfd;
+}
+.card.unavailable .product-select input {
+  display: none;
+}
+.card.unavailable .product-select button:disabled {
+  width: 100%;
+  background: var(--bg-subtle);
+  color: var(--ink-secondary);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 6px;
+  cursor: not-allowed;
+}
+
+/* Out of Stock Section Divider */
+.out-of-stock-divider {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 32px 0 16px;
+  padding: 16px 20px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--ink-muted);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+}
+.divider-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.divider-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.divider-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--bg-subtle);
+  color: var(--ink-secondary);
+  border: 1px solid var(--line);
+}
+.divider-title-row h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.divider-info p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+.divider-contact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+.divider-contact:hover {
+  background: var(--primary-light);
+  border-color: var(--primary-border);
+  color: var(--primary);
 }
 
 /* Show more button */
@@ -884,5 +970,20 @@ footer {
   .cart-row input {
     padding: 5px 2px;
     font-size: 12px;
+  }
+  .out-of-stock-divider {
+    padding: 14px 16px;
+    margin: 24px 0 12px;
+  }
+  .divider-title-row h3 {
+    font-size: 15px;
+  }
+  .divider-contact {
+    width: 100%;
+    justify-content: center;
+  }
+  .card.unavailable .product-select button:disabled {
+    font-size: 11px;
+    padding: 7px 4px;
   }
 }
