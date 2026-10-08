@@ -5,32 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; img-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
-  <meta name="color-scheme" content="light">
-  <title>DMO Store · รายการสินค้า</title>
-  <meta name="description" content="แค็ตตาล็อกซีล ไอเทม และเงิน T จากคลังร้าน">
+  <meta name="color-scheme" content="dark">
+  <title>DMO Store · ซีล ไอเทม บริการ</title>
+  <meta name="description" content="เลือกซีล ไอเทม บริการ และเงิน T แล้วคัดลอกรายการส่งร้าน">
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./availability.css">
+  <link rel="stylesheet" href="./catalog-controls.css">
   <script src="./app.js" defer></script>
 </head>
 <body>
-  <header class="hero">
-    <div class="hero-inner">
-      <div class="eyebrow">DMO STORE / PRODUCT CATALOG</div>
-      <h1>ของในร้าน<br><span>เลือกดูได้เลย</span></h1>
-      <p>ซีล ไอเทม บริการ และเงิน T จากหลังบ้านร้าน · สินค้าหมดก็ยังดูรายการได้</p>
-      <div class="hero-foot"><span id="updated">กำลังโหลดรายการ…</span><span>แค็ตตาล็อกสำหรับดูสินค้าเท่านั้น</span></div>
-    </div>
-    <div class="hero-art" aria-hidden="true"><span>✦</span><span>◈</span><span>✦</span></div>
-  </header>
-  <main>
-    <section class="toolbar" aria-label="ค้นหาสินค้า">
-      <div class="toolbar-title"><h2>สินค้าทั้งหมด</h2><p id="count"></p></div>
-      <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="ค้นหาชื่อสินค้า…" autocomplete="off"></label>
-      <div class="filters" id="filters"><button class="active" data-filter="all" type="button">ทั้งหมด</button><button data-filter="seal" type="button">ซีล</button><button data-filter="item" type="button">ไอเทม</button><button data-filter="service" type="button">บริการ</button><button data-filter="money" type="button">เงิน T</button></div>
-    </section>
-    <p id="message" class="message" role="status">กำลังโหลดสินค้า…</p>
-    <div id="products" class="grid" aria-live="polite"></div>
-  </main>
-  <footer>DMO Store · ข้อมูลสินค้าอาจเปลี่ยนระหว่างวัน กรุณายืนยันราคาและจำนวนก่อนซื้อ</footer>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="brand-line"><span class="brand-icon">📦</span><div><h1>DMO STORE</h1><p>ซีล ไอเทม บริการ และเงิน T · เลือกสินค้าแล้วคัดลอกรายการส่งร้าน</p></div></div>
+      <div class="hero-meta"><span>ข้อมูลจากหลังบ้านร้าน</span><strong id="updated">กำลังโหลดรายการ…</strong></div>
+    </header>
+    <nav class="top-nav" id="filters" aria-label="หมวดสินค้า">
+      <button class="active" data-filter="seal" type="button">🦖 ซีล</button>
+      <button data-filter="item" type="button">🎒 ไอเทม</button>
+      <button data-filter="service" type="button">⚔️ บริการ</button>
+      <button data-filter="money" type="button">💰 เงิน T</button>
+      <button data-filter="set" type="button">🎁 เซ็ตซีล</button>
+      <button data-filter="favorite" type="button">❤️ รายการโปรด <span id="favorite-count">(0)</span></button>
+      <button id="refresh" type="button">🔄 โหลดล่าสุด</button>
+    </nav>
+    <main class="shop-layout">
+      <div class="catalog-area">
+        <section class="notice-stack" aria-label="ประกาศร้าน">
+          <p class="notice blue">📢 กรุณารอร้านตรวจสต็อกและยืนยันยอดก่อนโอนทุกครั้ง</p>
+          <p class="notice gold">🎁 ซื้อซีลครบทุก 100 บาท รับ D2 ฟรี 150 อัน</p>
+          <p class="notice red">⚠️ ราคาและสต็อกอาจเปลี่ยนแปลง กรุณายึดยอดที่ร้านยืนยันล่าสุด</p>
+        </section>
+        <section class="toolbar" aria-label="ค้นหาสินค้า">
+          <h2 id="catalog-title">รายการซีล</h2>
+          <p class="intro">เลือกจำนวนและเพิ่มรายการ แล้วคัดลอกส่งให้ร้านตรวจสต็อก</p>
+          <div class="steps"><span>1 เลือกสินค้า</span><b>→</b><span>2 ตรวจตะกร้า</span><b>→</b><span>3 คัดลอก/ส่งร้าน</span><b>→</b><span>4 ร้านยืนยัน</span></div>
+          <label class="search"><span class="sr-only">ค้นหาสินค้า</span><input id="search" type="search" placeholder="ค้นหาชื่อสินค้า…" autocomplete="off"></label>
+          <div class="catalog-controls">
+            <label>สายซีล <select id="seal-line"><option value="all">ทุกสาย</option></select></label>
+            <label>หมวดย่อย <select id="section"><option value="all">ทุกหมวดย่อย</option><option value="NORMAL">ปกติ</option><option value="BASE_HARD">เบสยาก</option><option value="SUSA">ซูซา</option></select></label>
+            <label>เรียงตาม <select id="sort"><option value="name">ชื่อ ก–ฮ</option><option value="price-low">ราคาน้อยไปมาก</option><option value="price-high">ราคามากไปน้อย</option></select></label>
+            <label class="stock-check"><input id="available-only" type="checkbox"> เฉพาะที่มีสินค้า</label>
+          </div>
+          <p id="count" class="result-count"></p>
+        </section>
+        <section aria-label="รายการสินค้า"><p id="message" class="message" role="status">กำลังโหลดสินค้า…</p><div id="products" class="grid" aria-live="polite"></div><button id="show-more" class="show-more" type="button" hidden>แสดงเพิ่มอีก 60 รายการ</button></section>
+      </div>
+      <aside class="cart" id="cart" aria-label="รายการที่เลือก">
+        <div class="cart-head"><h2>🛒 รายการที่เลือก</h2><span id="cart-count">0 รายการ</span></div>
+        <p class="cart-steps">1 เลือกสินค้า → 2 กรอกข้อมูล → 3 คัดลอกส่งร้าน</p>
+        <div id="cart-items" class="cart-items"><p class="cart-empty">ยังไม่ได้เลือกสินค้า</p></div>
+        <div class="cart-summary"><div><span>ราคาก่อนลด</span><strong id="subtotal">0 ฿</strong></div><div><span>ส่วนลด 5%</span><strong id="discount">0 ฿</strong></div><div class="cart-total"><span>สุทธิประมาณ</span><strong id="total">0 ฿</strong></div><p id="reward"></p></div>
+        <div class="customer-fields"><label>ชื่อเทมเมอร์<input id="tamer" autocomplete="off" placeholder="ชื่อในเกม"></label><label>ชื่อ Facebook<input id="contact" autocomplete="off" placeholder="ชื่อที่ใช้ติดต่อ"></label></div>
+        <details><summary>📖 วิธีส่งรายการให้ร้าน</summary><ol><li>เลือกสินค้าและตรวจจำนวน</li><li>กรอกชื่อเทมเมอร์และ Facebook</li><li>คัดลอกข้อความแล้ววางในแชตร้าน</li><li>รอร้านยืนยันสต็อกและยอดก่อนโอน</li></ol></details>
+        <button id="copy-order" class="copy-order" type="button" disabled>📋 คัดลอกรายการเพื่อส่งร้าน</button>
+        <p id="copy-status" class="copy-status" role="status">ร้านจะยืนยันสต็อกและยอดอีกครั้งก่อนชำระเงิน</p>
+        <button id="clear-cart" class="clear-cart" type="button">ล้างรายการ</button>
+      </aside>
+    </main>
+    <footer>DMO Store · ข้อมูลสาธารณะที่อัปเดตจากหลังบ้าน · ไม่มีการส่งข้อมูลลูกค้าจากหน้านี้ไปยังหลังบ้าน</footer>
+  </div>
+  <a class="mobile-cart" href="#cart">🛒 รายการที่เลือก <span id="mobile-cart-count">0</span></a>
 </body>
 </html>

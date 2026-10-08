@@ -1,3 +1,2 @@
-.availability{display:inline-flex;border-radius:999px;padding:4px 9px;background:#e1f7ee;color:#087d57;font-size:11px;font-weight:700;margin:0 0 10px}
-.unavailable .availability{background:#f3f4f7;color:#6e7a8b}
-.unavailable .card-image{filter:saturate(.55)}
+.unavailable .card-image{filter:saturate(.6)}
+.availability{display:inline-block}

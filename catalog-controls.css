@@ -1,0 +1,6 @@
+.catalog-controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:10px}
+.catalog-controls label{display:flex;align-items:center;gap:5px;font-size:11px;color:#b6d0e0}
+.catalog-controls select{background:#08223b;border:1px solid #2c5776;color:#f0faff;border-radius:9px;padding:7px 8px;max-width:185px}
+.catalog-controls input{accent-color:#13a4e0}
+.catalog-controls .stock-check{margin-left:auto}
+@media(max-width:550px){.catalog-controls{gap:7px}.catalog-controls .stock-check{margin-left:0}}
