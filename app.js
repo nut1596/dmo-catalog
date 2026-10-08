@@ -4,7 +4,11 @@ const cards = $("#products"), message = $("#message"), search = $("#search");
 const number = new Intl.NumberFormat("th-TH", {maximumFractionDigits: 2});
 const baht = value => number.format(Math.round(value * 100) / 100) + " ฿";
 const cart = new Map();
-let products = [], kind = "all";
+let products = [], kind = "seal", visibleLimit = 60;
+let favorites;
+try { favorites = new Set(JSON.parse(localStorage.getItem("dmo-catalog-favorites") || "[]")); }
+catch (_) { favorites = new Set(); }
+const sectionNames = {NORMAL: "ปกติ", BASE_HARD: "เบสยาก", SUSA: "ซูซา", SET: "เซ็ต"};
 
 function element(tag, className, content) {
   const node = document.createElement(tag);
@@ -14,7 +18,7 @@ function element(tag, className, content) {
 }
 function productById(id) { return products.find(product => product.id === id); }
 function unitLabel(product) {
-  return product.kind === "seal" ? "ใบ" : product.kind === "money" ? "T" :
+  return product.kind === "seal" ? "ใบ" : product.kind === "set" ? "ชุด" : product.kind === "money" ? "T" :
     product.kind === "service" ? product.unit : "ชิ้น";
 }
 function defaultQuantity(product) {
@@ -33,9 +37,11 @@ function quantity(value) {
 
 function renderProducts() {
   const query = search.value.trim().toLocaleLowerCase("th");
-  const line = $("#seal-line").value, availableOnly = $("#available-only").checked;
-  const shown = products.filter(product => (kind === "all" || product.kind === kind) &&
-    (line === "all" || (product.kind === "seal" && product.category === line)) &&
+  const line = $("#seal-line").value, section = $("#section").value;
+  const availableOnly = $("#available-only").checked;
+  const shown = products.filter(product => (kind === "favorite" ? favorites.has(product.id) : product.kind === kind) &&
+    (line === "all" || product.category === line) &&
+    (section === "all" || (product.section || "NORMAL") === section) &&
     (!availableOnly || product.available) &&
     String(product.name).toLocaleLowerCase("th").includes(query));
   const sort = $("#sort").value;
@@ -44,7 +50,7 @@ function renderProducts() {
     sort === "price-high" ? ((b.price ?? -1) - (a.price ?? -1)) || a.name.localeCompare(b.name, "th") :
     a.name.localeCompare(b.name, "th"));
   const fragment = document.createDocumentFragment();
-  for (const product of shown) {
+  for (const product of shown.slice(0, visibleLimit)) {
     const card = element("article", "card" + (product.available ? "" : " unavailable"));
     const imageBox = element("div", "card-image");
     if (product.image && /^assets\/products\/[a-f0-9]{24}\.webp$/.test(product.image)) {
@@ -52,12 +58,23 @@ function renderProducts() {
       image.alt = product.name; image.loading = "lazy"; imageBox.append(image);
     } else imageBox.append(element("span", "placeholder", "◈"));
     const body = element("div", "card-body");
-    const label = product.kind === "seal" ? "SEAL · " + product.category :
+    const label = product.kind === "seal" ? product.category + " · " + (sectionNames[product.section] || "ปกติ") :
+      product.kind === "set" ? product.category + " · เซ็ตซีล" :
       product.kind === "service" ? "บริการ · " + product.category :
       product.kind === "money" ? "เงิน T" : "ITEM";
-    const price = element("div", "price");
-    price.append(element("strong", "", product.price > 0 ? baht(product.price) : "สอบถามราคา"),
-      element("span", "", "ต่อ " + product.unit));
+    const price = element("div", "price", (product.price > 0 ? baht(product.price) : "สอบถามราคา") + " / " + product.unit);
+    const top = element("div", "card-top");
+    const title = element("h3", "", product.name);
+    const favorite = element("button", "favorite-toggle" + (favorites.has(product.id) ? " selected" : ""),
+      favorites.has(product.id) ? "♥" : "♡");
+    favorite.type = "button"; favorite.setAttribute("aria-label", "รายการโปรด " + product.name);
+    favorite.addEventListener("click", () => {
+      if (favorites.has(product.id)) favorites.delete(product.id); else favorites.add(product.id);
+      try { localStorage.setItem("dmo-catalog-favorites", JSON.stringify([...favorites])); } catch (_) {}
+      $("#favorite-count").textContent = "(" + favorites.size + ")";
+      renderProducts();
+    });
+    top.append(title, favorite);
     const selector = element("div", "product-select");
     const input = element("input"); input.type = "number"; input.min = "1";
     input.max = "1000000"; input.value = defaultQuantity(product);
@@ -73,12 +90,20 @@ function renderProducts() {
       renderCart(); $("#copy-status").textContent = "เพิ่ม " + product.name + " แล้ว · ตรวจรายการก่อนคัดลอก";
     });
     selector.append(input, add);
-    body.append(element("div", "category", label), element("h3", "", product.name),
-      element("span", "availability", product.available ? "มีสินค้า" : "สอบถามสต็อก"), price, selector);
+    body.append(top, element("div", "category", label), price,
+      element("span", "availability", product.available ? "มีสินค้า" : "สอบถามสต็อก"));
+    if (product.kind === "set" && Array.isArray(product.members)) {
+      const detail = element("details", "set-members");
+      detail.append(element("summary", "", "ดูสมาชิก " + product.members.length + " ชนิด · ชนิดละ " + number.format(product.leaves_per_seal) + " ใบ"),
+        element("p", "", product.members.join(" · ")));
+      body.append(detail);
+    }
+    body.append(selector);
     card.append(imageBox, body); fragment.append(card);
   }
   cards.replaceChildren(fragment);
-  $("#count").textContent = shown.length + " รายการ";
+  $("#count").textContent = "พบ " + shown.length + " รายการ" + (shown.length > visibleLimit ? " · แสดง " + visibleLimit + " รายการแรก" : "");
+  $("#show-more").hidden = shown.length <= visibleLimit;
   message.hidden = shown.length > 0;
   if (!shown.length) message.textContent = products.length ? "ไม่พบสินค้าที่ค้นหา" : "ยังไม่มีสินค้าในแค็ตตาล็อก";
 }
@@ -89,7 +114,7 @@ function totals() {
     const product = productById(id);
     if (!product) continue;
     const value = linePrice(product, amount); subtotal += value;
-    if (product.kind === "seal") sealSubtotal += value;
+    if (product.kind === "seal" || product.kind === "set") sealSubtotal += value;
   }
   const discount = Math.round(subtotal * 5) / 100;
   return {subtotal, discount, total: subtotal - discount,
@@ -123,6 +148,7 @@ function renderCart() {
   $("#cart-items").replaceChildren(fragment);
   const sum = totals();
   $("#cart-count").textContent = rows + " รายการ";
+  $("#mobile-cart-count").textContent = String(rows);
   $("#subtotal").textContent = baht(sum.subtotal);
   $("#discount").textContent = "−" + baht(sum.discount);
   $("#total").textContent = baht(sum.total);
@@ -142,7 +168,9 @@ function orderText() {
     if (product) lines.push(++index + ". " + product.name +
       (product.kind === "seal" ? " [" + product.category + "]" : "") +
       " × " + number.format(amount) + " " + unitLabel(product) + " = " +
-      baht(linePrice(product, amount)) + (product.available ? "" : " (รอตรวจสต็อก)"));
+      baht(linePrice(product, amount)) + (product.kind === "set" ?
+        " (" + product.members.join(", ") + "; ชนิดละ " + number.format(product.leaves_per_seal) + " ใบ)" : "") +
+      (product.available ? "" : " (รอตรวจสต็อก)"));
   }
   const sum = totals();
   lines.push("", "รวมก่อนลด: " + baht(sum.subtotal), "ลด 5%: " + baht(sum.discount),
@@ -168,18 +196,27 @@ $("#filters").addEventListener("click", event => {
   kind = button.dataset.filter;
   document.querySelectorAll("#filters button").forEach(item =>
     item.classList.toggle("active", item === button));
-  if (kind !== "seal") $("#seal-line").value = "all";
+  if (!(["seal", "set", "favorite"].includes(kind))) $("#seal-line").value = "all";
+  if (kind !== "seal") $("#section").value = "all";
+  $("#section").closest("label").hidden = kind !== "seal";
+  $("#seal-line").closest("label").hidden = !(["seal", "set", "favorite"].includes(kind));
+  $("#catalog-title").textContent = ({seal: "รายการซีล", item: "รายการไอเทม", service: "รายการบริการ",
+    money: "เงิน T", set: "เซ็ตซีล", favorite: "รายการโปรด"})[kind];
+  visibleLimit = 60;
   renderProducts();
 });
-search.addEventListener("input", renderProducts);
-[$("#seal-line"), $("#sort"), $("#available-only")].forEach(control =>
-  control.addEventListener("change", renderProducts));
+search.addEventListener("input", () => { visibleLimit = 60; renderProducts(); });
+[$("#seal-line"), $("#section"), $("#sort"), $("#available-only")].forEach(control =>
+  control.addEventListener("change", () => { visibleLimit = 60; renderProducts(); }));
+$("#show-more").addEventListener("click", () => { visibleLimit += 60; renderProducts(); });
+$("#clear-cart").addEventListener("click", () => { cart.clear(); renderCart(); $("#copy-status").textContent = "ล้างรายการแล้ว"; });
+$("#refresh").addEventListener("click", () => { window.location.reload(); });
 fetch("./catalog.json", {cache: "no-cache"}).then(response => {
   if (!response.ok) throw new Error("catalog unavailable");
   return response.json();
 }).then(data => {
   products = Array.isArray(data.products) ? data.products : [];
-  const lines = [...new Set(products.filter(p => p.kind === "seal" && p.category)
+  const lines = [...new Set(products.filter(p => (p.kind === "seal" || p.kind === "set") && p.category)
     .map(p => p.category))].sort();
   for (const line of lines) {
     const option = element("option", "", line); option.value = line;
@@ -188,5 +225,6 @@ fetch("./catalog.json", {cache: "no-cache"}).then(response => {
   const updated = new Date(data.updated_at);
   $("#updated").textContent = Number.isNaN(updated.getTime()) ? "รายการสินค้าล่าสุด" :
     "อัปเดต " + updated.toLocaleString("th-TH", {dateStyle: "medium", timeStyle: "short"});
+  $("#favorite-count").textContent = "(" + favorites.size + ")";
   renderProducts(); renderCart();
 }).catch(() => { message.textContent = "ยังโหลดรายการสินค้าไม่ได้ กรุณาลองใหม่ภายหลัง"; });
