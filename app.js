@@ -203,16 +203,25 @@ function renderProducts() {
     input.defaultValue = def;
     input.setAttribute("value", def);
     input.setAttribute("aria-label", "จำนวน" + unitLabel(product) + "ของ" + product.name);
-    if (typeof product.stock === "number") {
-      input.placeholder = "สูงสุด " + number.format(maxVal);
+    const isMoney = product.kind === "money";
+    if (isMoney && typeof product.stock === "number") {
+      input.placeholder = "สูงสุด " + number.format(maxVal) + " T";
+    } else {
+      input.placeholder = "ระบุจำนวน";
     }
     const add = element("button", "", "เพิ่มรายการ"); add.type = "button";
 
     input.addEventListener("input", () => {
       const val = Number(input.value);
       if (val > maxVal) {
-        input.setCustomValidity("จำนวนสูงสุดไม่เกิน " + number.format(maxVal) + " " + unitLabel(product));
-      } else if (val < 1) {
+        input.value = maxVal;
+        if (isMoney) {
+          input.setCustomValidity("จำนวนสูงสุดไม่เกิน " + number.format(maxVal) + " " + unitLabel(product));
+        } else {
+          input.setCustomValidity("สั่งซื้อได้สูงสุดไม่เกินจำนวนที่มีพร้อมส่ง");
+        }
+        input.reportValidity();
+      } else if (val < 1 && input.value !== "") {
         input.setCustomValidity("กรุณากรอกจำนวนอย่างน้อย 1 " + unitLabel(product));
       } else {
         input.setCustomValidity("");
@@ -229,18 +238,31 @@ function renderProducts() {
       add.textContent = "เพิ่มรายการ";
       input.disabled = false;
       add.addEventListener("click", () => {
-        const amount = quantity(input.value, maxVal);
+        let val = Number(input.value);
+        if (val > maxVal) {
+          input.value = maxVal;
+          val = maxVal;
+        }
+        const amount = quantity(val, maxVal);
         if (!amount) {
-          input.setCustomValidity("กรุณากรอกจำนวน 1–" + number.format(maxVal) + " " + unitLabel(product));
+          if (isMoney) {
+            input.setCustomValidity("กรุณากรอกจำนวน 1–" + number.format(maxVal) + " " + unitLabel(product));
+          } else {
+            input.setCustomValidity("กรุณากรอกจำนวนที่ถูกต้อง (ไม่เกินจำนวนที่มีพร้อมส่ง)");
+          }
           input.reportValidity();
           return;
         }
         const currentInCart = cart.get(product.id) || 0;
         if (currentInCart + amount > maxVal) {
           const remaining = Math.max(0, maxVal - currentInCart);
-          const msg = remaining > 0
-            ? "ไม่สามารถเพิ่มเกินสต็อกได้ (สต็อกมี " + number.format(maxVal) + " " + unitLabel(product) + ", ในตะกร้ามีแล้ว " + number.format(currentInCart) + " " + unitLabel(product) + ", เพิ่มได้อีกไม่เกิน " + number.format(remaining) + " " + unitLabel(product) + ")"
-            : "ในตะกร้ามีสินค้านี้ครบตามจำนวนสต็อกแล้ว (" + number.format(maxVal) + " " + unitLabel(product) + ")";
+          const msg = isMoney
+            ? (remaining > 0
+                ? "ไม่สามารถเพิ่มเกินสต็อกได้ (พร้อมส่ง " + number.format(maxVal) + " " + unitLabel(product) + ", ในตะกร้ามีแล้ว " + number.format(currentInCart) + ", เพิ่มได้อีกไม่เกิน " + number.format(remaining) + ")"
+                : "ในตะกร้ามีสินค้านี้ครบตามจำนวนสต็อกแล้ว (" + number.format(maxVal) + " " + unitLabel(product) + ")")
+            : (remaining > 0
+                ? "ไม่สามารถสั่งซื้อเกินจำนวนที่มีพร้อมส่งได้ (เพิ่มได้อีกไม่เกิน " + number.format(remaining) + " " + unitLabel(product) + ")"
+                : "ในตะกร้ามีสินค้านี้ครบจำนวนพร้อมส่งแล้ว");
           input.setCustomValidity(msg);
           input.reportValidity();
           return;
@@ -262,9 +284,9 @@ function renderProducts() {
     selector.append(input, add);
     const availText = (!product.available || maxVal < 1)
       ? "หมด (สามารถสอบถามได้)"
-      : (typeof product.stock === "number"
-          ? "มีสินค้า (สต็อก " + number.format(product.stock) + " " + unitLabel(product) + ")"
-          : "มีสินค้า");
+      : (isMoney && typeof product.stock === "number"
+          ? "มีสินค้า (พร้อมส่ง " + number.format(product.stock) + " T)"
+          : "มีสินค้าพร้อมส่ง");
     body.append(top, element("div", "category", label), price,
       element("span", "availability", availText));
     if (product.kind === "set" && Array.isArray(product.members)) {
@@ -334,13 +356,20 @@ function renderCart() {
     input.defaultValue = validAmount;
     input.setAttribute("value", validAmount);
     input.setAttribute("aria-label", "จำนวน" + product.name);
+    input.addEventListener("input", () => {
+      if (Number(input.value) > maxVal) {
+        input.value = maxVal;
+      }
+    });
     input.addEventListener("change", () => {
       let next = quantity(input.value, maxVal);
       if (!next) {
         if (Number(input.value) > maxVal) {
           next = maxVal;
           input.value = maxVal;
-          $("#copy-status").textContent = "ปรับจำนวน " + product.name + " เป็นไม่เกินสต็อก (" + number.format(maxVal) + " " + unitLabel(product) + ") แล้ว";
+          $("#copy-status").textContent = product.kind === "money"
+            ? "ปรับจำนวน " + product.name + " เป็นไม่เกินสต็อก (" + number.format(maxVal) + " " + unitLabel(product) + ") แล้ว"
+            : "ปรับจำนวน " + product.name + " เป็นจำนวนสูงสุดที่มีพร้อมส่งแล้ว";
         } else {
           input.value = cart.get(id);
           return;
