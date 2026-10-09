@@ -20,11 +20,68 @@
       <div class="eyebrow">DMO STORE / PRODUCT CATALOG</div>
       <h1>ของในร้าน<br><span>เลือกดูได้เลย</span></h1>
       <p>ซีล ไอเทม บริการ และเงิน T จากหลังบ้านร้าน · สินค้าหมดก็ยังดูรายการได้</p>
-      <div class="hero-foot"><span id="updated">กำลังโหลดรายการ…</span><span>เลือกสินค้าแล้วคัดลอกรายการส่งร้าน</span></div>
+      <div class="hero-foot">
+        <span id="updated">กำลังโหลดรายการ…</span>
+        <span>เลือกสินค้าแล้วคัดลอกรายการส่งร้าน</span>
+        <a href="#ordering-guide" class="hero-guide-btn" id="open-guide-link">📖 วิธีสั่งซื้อผ่านเว็บ (5 ขั้นตอน)</a>
+      </div>
     </div>
     <div class="hero-art" aria-hidden="true"><span>✦</span><span>◈</span><span>✦</span></div>
   </header>
   <main>
+    <!-- Quick How-To Order Steps (Commerce Flow) -->
+    <section class="ordering-guide-section" id="ordering-guide" aria-label="ขั้นตอนการสั่งซื้อผ่านเว็บ">
+      <div class="commerce-flow" aria-label="5 ขั้นตอนการสั่งซื้อ">
+        <div class="flow-pill"><b>1</b> ค้นหา / เลือกสินค้า</div>
+        <div class="flow-arrow" aria-hidden="true">➔</div>
+        <div class="flow-pill"><b>2</b> ใส่ตะกร้า & ระบุจำนวน</div>
+        <div class="flow-arrow" aria-hidden="true">➔</div>
+        <div class="flow-pill"><b>3</b> กรอกชื่อเทมเมอร์ & FB</div>
+        <div class="flow-arrow" aria-hidden="true">➔</div>
+        <div class="flow-pill"><b>4</b> กดคัดลอกรายการ</div>
+        <div class="flow-arrow" aria-hidden="true">➔</div>
+        <div class="flow-pill"><b>5</b> ส่งแชตร้าน รอรับของทันที!</div>
+      </div>
+
+      <details class="user-guide-accordion" id="guide-accordion">
+        <summary class="user-guide-summary">
+          <span class="guide-summary-title">💡 วิธีสั่งซื้อสินค้าผ่านเว็บ DMO Store ง่ายๆ ใน 1 นาที (คลิกดูคำแนะนำ)</span>
+          <span class="guide-summary-badge">ดูขั้นตอนใช้งาน</span>
+        </summary>
+        <div class="guide-steps-container">
+          <div class="guide-steps-grid">
+            <div class="guide-step-card">
+              <div class="step-badge">ขั้นตอนที่ 1</div>
+              <h4>🔍 ค้นหา & เลือกสินค้า</h4>
+              <p>ค้นหาชื่อ หรือกดปุ่มหมวดหมู่ (เซ็ตซีล, ซีลปกติ, เบสยาก, ซูซา, ไอเทม, บริการ, เงิน T)</p>
+            </div>
+            <div class="guide-step-card">
+              <div class="step-badge">ขั้นตอนที่ 2</div>
+              <h4>🛒 กดใส่ตะกร้า</h4>
+              <p>กดปุ่ม <code>+ ตะกร้า</code> ปรับจำนวนตามต้องการ ระบบคิดส่วนลด 5% และแถม D2 ให้อัตโนมัติ</p>
+            </div>
+            <div class="guide-step-card">
+              <div class="step-badge">ขั้นตอนที่ 3</div>
+              <h4>👤 กรอกข้อมูลผู้รับ</h4>
+              <p>ไปที่กล่องตะกร้า กรอก <b>ชื่อเทมเมอร์</b> ในเกม และ <b>ชื่อ Facebook</b> เพื่อให้ร้านส่งของถูกคน</p>
+            </div>
+            <div class="guide-step-card">
+              <div class="step-badge">ขั้นตอนที่ 4</div>
+              <h4>📋 คัดลอกรายการ</h4>
+              <p>กดปุ่ม <b>"คัดลอกรายการเพื่อส่งร้าน"</b> ข้อมูลสรุปออเดอร์จะถูกคัดลอกลงเครื่องของคุณทันที</p>
+            </div>
+            <div class="guide-step-card">
+              <div class="step-badge">ขั้นตอนที่ 5</div>
+              <h4>💬 ส่งแชตร้าน & รับของ</h4>
+              <p>กด <b>"เปิดแชตส่งข้อความหาร้าน"</b> แล้ววาง (Paste) ส่งได้เลย ร้านตรวจสต็อกและนัดส่งของให้ครับ</p>
+            </div>
+          </div>
+          <div class="guide-footer-tip">
+            🎁 <b>โปรโมชั่นพิเศษ:</b> ซื้อซีลครบทุก 100 บาท รับฟรี D2 150 อัน! · สามารถกดรูปหัวใจเพื่อบันทึกรายการโปรดไว้ดูย้อนหลังได้
+          </div>
+        </div>
+      </details>
+    </section>
     <section class="toolbar" aria-label="ค้นหาสินค้า">
       <div class="toolbar-title"><h2 id="catalog-title">สินค้าทั้งหมด</h2><p id="count">กำลังโหลดข้อมูล…</p></div>
       <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="ค้นหาชื่อสินค้า…" autocomplete="off"></label>
@@ -75,8 +132,7 @@
         <button id="copy-order" class="copy-order" type="button" disabled>คัดลอกรายการเพื่อส่งร้าน</button>
         <a class="contact-link" href="https://m.me/kakachi.kung.5" target="_blank" rel="noopener noreferrer">เปิดแชตส่งข้อความหาร้าน ↗</a>
         <a class="contact-fallback" href="https://www.facebook.com/kakachi.kung.5/" target="_blank" rel="noopener noreferrer">เปิดโปรไฟล์ Facebook หากแชตไม่เปิด</a>
-        <p id="copy-status" class="copy-status" role="status">ร้านจะยืนยันสต็อกและยอดอีกครั้งก่อนชำระเงิน</p>
-        <details><summary>วิธีส่งรายการ</summary><ol><li>เลือกสินค้าและจำนวน</li><li>กรอกชื่อเทมเมอร์กับ Facebook</li><li>กดคัดลอก แล้ววางข้อความในแชตร้าน</li><li>รอร้านยืนยันยอดก่อนโอนเงิน</li></ol></details>
+        <details class="cart-help-details"><summary>วิธีส่งรายการให้ร้าน</summary><ol><li>ตรวจรายการและจำนวนในตะกร้าให้เรียบร้อย</li><li>กรอกชื่อเทมเมอร์ในเกม และชื่อ Facebook</li><li>กดปุ่ม <b>"คัดลอกรายการเพื่อส่งร้าน"</b> ด้านบน</li><li>กดลิงก์ <b>"เปิดแชตส่งข้อความหาร้าน"</b> แล้ววาง (Paste) ส่งในแชต</li><li>รอร้านตรวจสต็อกและยืนยันยอดก่อนโอนเงินครับ</li></ol></details>
         <button id="clear-cart" class="clear-cart" type="button">ล้างรายการ</button>
       </div>
       </section>
