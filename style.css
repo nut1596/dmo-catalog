@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   /* Typography */
   --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Leelawadee UI", Tahoma, sans-serif;
 
@@ -6,6 +7,8 @@
   --bg-page: #f8fafc;
   --bg-surface: #ffffff;
   --bg-subtle: #f1f5f9;
+  --bg-input: #ffffff;
+  --card-gradient: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
 
   /* Ink / Text Colors */
   --ink: #0f172a;
@@ -44,6 +47,51 @@
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-pill: 9999px;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Surfaces & Backgrounds */
+  --bg-page: #0b1322;
+  --bg-surface: #131f37;
+  --bg-subtle: #1c2b4a;
+  --bg-input: #0c1424;
+  --card-gradient: linear-gradient(180deg, #131f37 0%, #0e172a 100%);
+
+  /* Ink / Text Colors */
+  --ink: #f1f5f9;
+  --ink-secondary: #cbd5e1;
+  --ink-muted: #8496b0;
+
+  /* Lines & Borders */
+  --line: #223558;
+  --line-subtle: #1a2844;
+
+  /* Brand Accent */
+  --primary: #38bdf8;
+  --primary-hover: #0ea5e9;
+  --primary-light: rgba(56, 189, 248, 0.12);
+  --primary-border: rgba(56, 189, 248, 0.32);
+
+  /* Semantic Statuses */
+  --success: #34d399;
+  --success-bg: rgba(16, 185, 129, 0.15);
+  --success-border: rgba(16, 185, 129, 0.35);
+
+  --stock-out: #94a3b8;
+  --stock-out-bg: #1c2b4a;
+  --stock-out-border: #2c3e63;
+
+  --danger: #f87171;
+  --danger-bg: rgba(239, 68, 68, 0.15);
+  --danger-border: rgba(239, 68, 68, 0.35);
+
+  /* Elevation Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 2px 6px 0 rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 6px 18px -2px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 12px 30px -4px rgba(0, 0, 0, 0.7);
 }
 
 * { box-sizing: border-box; }
@@ -1260,4 +1308,198 @@ footer {
   .guide-steps-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ==========================================================================
+   Dark Theme Overrides & Theme Switcher
+   ========================================================================== */
+.hero-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.hero-top-row .eyebrow {
+  margin-bottom: 0;
+}
+
+.theme-switch {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  gap: 3px;
+}
+
+.theme-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 0;
+  color: #94a3b8;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.theme-btn:hover {
+  color: #ffffff;
+}
+.theme-btn.active {
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+[data-theme="dark"] .theme-btn.active {
+  background: #38bdf8;
+  color: #0b1322;
+}
+
+.theme-toggle-quick {
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  color: var(--ink-secondary);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+.theme-toggle-quick:hover {
+  background: var(--bg-subtle);
+  color: var(--ink);
+  border-color: var(--primary-border);
+}
+
+/* Dark Theme Specific Overrides */
+[data-theme="dark"] .search input,
+[data-theme="dark"] .product-select input,
+[data-theme="dark"] .cart-row input,
+[data-theme="dark"] .customer-fields input,
+[data-theme="dark"] .catalog-controls select {
+  background: var(--bg-input);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+[data-theme="dark"] .search {
+  background: var(--bg-input);
+  border-color: var(--line);
+}
+[data-theme="dark"] .search:focus-within {
+  background: var(--bg-surface);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+}
+
+[data-theme="dark"] .filters button {
+  background: var(--bg-surface);
+  border-color: var(--line);
+  color: var(--ink-secondary);
+}
+[data-theme="dark"] .filters button:hover {
+  background: var(--bg-subtle);
+  color: var(--ink);
+  border-color: var(--primary-border);
+}
+[data-theme="dark"] .filters button.active {
+  background: var(--primary);
+  color: #0b1322;
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35);
+}
+
+[data-theme="dark"] .card.set-card {
+  background: var(--card-gradient);
+  border-color: var(--line);
+}
+
+[data-theme="dark"] .card-image {
+  background: #080d19;
+  border-color: var(--line-subtle);
+}
+
+[data-theme="dark"] .set-members summary {
+  background: var(--bg-subtle);
+  border-color: var(--line);
+  color: var(--primary);
+}
+[data-theme="dark"] .set-members[open] summary {
+  background: var(--primary-light);
+  border-color: var(--primary-border);
+}
+
+[data-theme="dark"] .user-guide-accordion {
+  border-color: var(--primary-border);
+}
+[data-theme="dark"] .user-guide-summary {
+  background: var(--primary-light);
+}
+[data-theme="dark"] .guide-summary-title {
+  color: var(--primary);
+}
+[data-theme="dark"] .guide-steps-container {
+  background: var(--bg-surface);
+  border-color: var(--primary-border);
+}
+[data-theme="dark"] .guide-step-card {
+  background: var(--bg-page);
+  border-color: var(--line);
+}
+[data-theme="dark"] .guide-footer-tip {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.28);
+  color: #6ee7b7;
+}
+
+[data-theme="dark"] .cart-summary {
+  background: var(--bg-page);
+  border-color: var(--line);
+}
+[data-theme="dark"] .cart-summary p#reward {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.28);
+  color: #fcd34d;
+}
+
+[data-theme="dark"] .out-of-stock-divider {
+  background: var(--bg-surface);
+  border-color: var(--line);
+  border-left-color: var(--ink-muted);
+}
+[data-theme="dark"] .divider-contact {
+  background: var(--bg-page);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+[data-theme="dark"] .show-more {
+  background: var(--bg-surface);
+  border-color: var(--line);
+  color: var(--primary);
+}
+
+[data-theme="dark"] footer {
+  color: var(--ink-muted);
+  border-top-color: var(--line);
+}
+
+[data-theme="dark"] .mobile-cart {
+  background: var(--primary);
+  color: #0b1322;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.4);
 }

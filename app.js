@@ -1,4 +1,38 @@
 "use strict";
+
+// --- 2-Color Modes (Light & Dark Theme) ---
+function getInitialTheme() {
+  try {
+    const saved = localStorage.getItem("dmo-theme");
+    if (saved === "light" || saved === "dark") return saved;
+    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      return "dark";
+    }
+  } catch (_) {}
+  return "light";
+}
+
+let currentTheme = getInitialTheme();
+document.documentElement.setAttribute("data-theme", currentTheme);
+
+function applyTheme(theme) {
+  currentTheme = theme;
+  document.documentElement.setAttribute("data-theme", theme);
+  try {
+    localStorage.setItem("dmo-theme", theme);
+  } catch (_) {}
+  
+  const lightBtn = document.getElementById("theme-light-btn");
+  const darkBtn = document.getElementById("theme-dark-btn");
+  if (lightBtn) lightBtn.classList.toggle("active", theme === "light");
+  if (darkBtn) darkBtn.classList.toggle("active", theme === "dark");
+  
+  const quickBtn = document.getElementById("theme-toggle-quick");
+  if (quickBtn) {
+    quickBtn.textContent = theme === "dark" ? "☀️ โหมดสว่าง" : "🌙 โหมดมืด";
+  }
+}
+
 const $ = selector => document.querySelector(selector);
 const cards = $("#products"), message = $("#message"), search = $("#search");
 const number = new Intl.NumberFormat("th-TH", {maximumFractionDigits: 2});
@@ -398,6 +432,15 @@ if (guideLink) {
     }
   });
 }
+
+// Wire theme toggles
+applyTheme(currentTheme);
+const lightBtn = $("#theme-light-btn");
+const darkBtn = $("#theme-dark-btn");
+const quickBtn = $("#theme-toggle-quick");
+if (lightBtn) lightBtn.addEventListener("click", () => applyTheme("light"));
+if (darkBtn) darkBtn.addEventListener("click", () => applyTheme("dark"));
+if (quickBtn) quickBtn.addEventListener("click", () => applyTheme(currentTheme === "dark" ? "light" : "dark"));
 if ("IntersectionObserver" in window) {
   new IntersectionObserver(entries => {
     $(".mobile-cart").classList.toggle("is-hidden", entries[0].isIntersecting);
