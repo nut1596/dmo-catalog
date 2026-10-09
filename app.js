@@ -405,10 +405,34 @@ $("#copy-order").addEventListener("click", async () => {
     $("#copy-status").textContent = "กรุณากรอกชื่อเทมเมอร์และชื่อ Facebook ก่อนคัดลอก";
     (!$("#tamer").value.trim() ? $("#tamer") : $("#contact")).focus(); return;
   }
-  try {
-    await navigator.clipboard.writeText(content);
+  let copied = false;
+  if (window.isSecureContext && navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+    try {
+      await navigator.clipboard.writeText(content);
+      copied = true;
+    } catch (_) {}
+  }
+  if (!copied) {
+    try {
+      const temp = document.createElement("textarea");
+      temp.value = content;
+      temp.setAttribute("readonly", "");
+      temp.style.position = "fixed";
+      temp.style.left = "-9999px";
+      temp.style.top = "0";
+      document.body.appendChild(temp);
+      temp.focus();
+      temp.select();
+      temp.setSelectionRange(0, temp.value.length);
+      copied = document.execCommand("copy");
+      document.body.removeChild(temp);
+    } catch (_) {}
+  }
+  if (copied) {
     $("#copy-status").textContent = "คัดลอกแล้ว! กดเปิด Facebook ร้าน แล้ววางข้อความส่งแชต";
-  } catch (_) { $("#copy-status").textContent = "คัดลอกไม่สำเร็จ กรุณาอนุญาตคลิปบอร์ดแล้วลองอีกครั้ง"; }
+  } else {
+    $("#copy-status").textContent = "คัดลอกไม่สำเร็จ กรุณาอนุญาตคลิปบอร์ดแล้วลองอีกครั้ง";
+  }
 });
 function applySealSection(sec) {
   $("#section").value = sec;
