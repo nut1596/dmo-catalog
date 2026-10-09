@@ -34,12 +34,10 @@ function unitLabel(product) {
     product.kind === "service" ? product.unit : "ชิ้น";
 }
 function defaultQuantity(product) {
-  return product.kind === "seal" ? (product.pack_size || 1000) : product.kind === "money" ?
-    Math.max(1, Number.parseFloat(product.unit) || 1) : 1;
+  return product.kind === "seal" ? (product.pack_size || 1000) : product.kind === "money" ? 1000 : 1;
 }
 function linePrice(product, quantity) {
-  const divisor = product.kind === "seal" ? (product.pack_size || 1000) : product.kind === "money" ?
-    Number.parseFloat(product.unit) || 1 : 1;
+  const divisor = product.kind === "seal" ? (product.pack_size || 1000) : 1;
   return (product.price || 0) * quantity / divisor;
 }
 function quantity(value) {
