@@ -68,17 +68,21 @@ function unitLabel(product) {
     product.kind === "service" ? product.unit : "ชิ้น";
 }
 function maxQuantity(product) {
-  if (product && product.kind === "money" && typeof product.stock === "number") {
+  if (product && typeof product.stock === "number") {
     return Math.max(0, product.stock);
   }
   return 1000000;
 }
 function defaultQuantity(product) {
+  const maxVal = maxQuantity(product);
   if (product && product.kind === "money") {
-    const maxVal = maxQuantity(product);
     return maxVal > 0 ? Math.min(maxVal, 1000) : 1;
   }
-  return product.kind === "seal" ? (product.pack_size || 1000) : 1;
+  if (product && product.kind === "seal") {
+    const pack = product.pack_size || 1000;
+    return maxVal > 0 ? Math.min(maxVal, pack) : 1;
+  }
+  return maxVal > 0 ? Math.min(maxVal, 1) : 1;
 }
 function linePrice(product, quantity) {
   const divisor = product.kind === "seal" ? (product.pack_size || 1000) : 1;
@@ -199,7 +203,7 @@ function renderProducts() {
     input.defaultValue = def;
     input.setAttribute("value", def);
     input.setAttribute("aria-label", "จำนวน" + unitLabel(product) + "ของ" + product.name);
-    if (product.kind === "money" && typeof product.stock === "number") {
+    if (typeof product.stock === "number") {
       input.placeholder = "สูงสุด " + number.format(maxVal);
     }
     const add = element("button", "", "เพิ่มรายการ"); add.type = "button";
@@ -258,8 +262,8 @@ function renderProducts() {
     selector.append(input, add);
     const availText = (!product.available || maxVal < 1)
       ? "หมด (สามารถสอบถามได้)"
-      : (product.kind === "money" && typeof product.stock === "number"
-          ? "มีสินค้า (สต็อก " + number.format(product.stock) + " T)"
+      : (typeof product.stock === "number"
+          ? "มีสินค้า (สต็อก " + number.format(product.stock) + " " + unitLabel(product) + ")"
           : "มีสินค้า");
     body.append(top, element("div", "category", label), price,
       element("span", "availability", availText));
