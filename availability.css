@@ -1,2 +1,35 @@
-.unavailable .card-image{filter:saturate(.6)}
-.availability{display:inline-block}
+/* Availability status indicator styles (Clean International Standard) */
+.unavailable .card-image img,
+.unavailable .placeholder {
+  filter: none;
+  opacity: 1;
+}
+
+.availability {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  background: var(--success-bg, #ecfdf5);
+  color: var(--success, #059669);
+  border: 1px solid var(--success-border, #a7f3d0);
+}
+
+.availability::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.unavailable .availability {
+  background: var(--stock-out-bg, #f1f5f9);
+  color: var(--stock-out, #64748b);
+  border: 1px solid var(--stock-out-border, #e2e8f0);
+}

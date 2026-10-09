@@ -1,4 +1,38 @@
 "use strict";
+
+// --- 2-Color Modes (Light & Dark Theme) ---
+function getInitialTheme() {
+  try {
+    const saved = localStorage.getItem("dmo-theme");
+    if (saved === "light" || saved === "dark") return saved;
+    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      return "dark";
+    }
+  } catch (_) {}
+  return "light";
+}
+
+let currentTheme = getInitialTheme();
+document.documentElement.setAttribute("data-theme", currentTheme);
+
+function applyTheme(theme) {
+  currentTheme = theme;
+  document.documentElement.setAttribute("data-theme", theme);
+  try {
+    localStorage.setItem("dmo-theme", theme);
+  } catch (_) {}
+  
+  const lightBtn = document.getElementById("theme-light-btn");
+  const darkBtn = document.getElementById("theme-dark-btn");
+  if (lightBtn) lightBtn.classList.toggle("active", theme === "light");
+  if (darkBtn) darkBtn.classList.toggle("active", theme === "dark");
+  
+  const quickBtn = document.getElementById("theme-toggle-quick");
+  if (quickBtn) {
+    quickBtn.textContent = theme === "dark" ? "☀️ โหมดสว่าง" : "🌙 โหมดมืด";
+  }
+}
+
 const $ = selector => document.querySelector(selector);
 const cards = $("#products"), message = $("#message"), search = $("#search");
 const number = new Intl.NumberFormat("th-TH", {maximumFractionDigits: 2});
@@ -387,6 +421,26 @@ $("#set-line-filters").addEventListener("click", event => {
 $("#show-more").addEventListener("click", () => { visibleLimit += 60; renderProducts(); });
 $("#clear-cart").addEventListener("click", () => { cart.clear(); renderCart(); $("#copy-status").textContent = "ล้างรายการแล้ว"; });
 $("#refresh").addEventListener("click", () => { window.location.reload(); });
+const guideLink = $("#open-guide-link");
+if (guideLink) {
+  guideLink.addEventListener("click", event => {
+    event.preventDefault();
+    const accordion = $("#guide-accordion");
+    if (accordion) {
+      accordion.open = true;
+      accordion.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
+}
+
+// Wire theme toggles
+applyTheme(currentTheme);
+const lightBtn = $("#theme-light-btn");
+const darkBtn = $("#theme-dark-btn");
+const quickBtn = $("#theme-toggle-quick");
+if (lightBtn) lightBtn.addEventListener("click", () => applyTheme("light"));
+if (darkBtn) darkBtn.addEventListener("click", () => applyTheme("dark"));
+if (quickBtn) quickBtn.addEventListener("click", () => applyTheme(currentTheme === "dark" ? "light" : "dark"));
 if ("IntersectionObserver" in window) {
   new IntersectionObserver(entries => {
     $(".mobile-cart").classList.toggle("is-hidden", entries[0].isIntersecting);
@@ -430,16 +484,22 @@ fetch("./catalog.json", {cache: "no-cache"}).then(response => {
 
 // Anti-theft & Scraping Protections
 document.addEventListener("contextmenu", event => {
+  // Allow right-click context menu only in form inputs/textarea so customers can paste
+  if (event.target.closest("input, textarea")) return;
   event.preventDefault();
   return false;
 }, { capture: true });
 
 document.addEventListener("dragstart", event => {
+  if (event.target.closest("input, textarea")) return;
   event.preventDefault();
   return false;
 }, { capture: true });
 
 document.addEventListener("keydown", event => {
+  // Allow normal typing / editing shortcuts inside inputs
+  if (event.target.closest("input, textarea")) return;
+
   // Block F12
   if (event.key === "F12" || event.keyCode === 123) {
     event.preventDefault();
@@ -466,12 +526,17 @@ document.addEventListener("keydown", event => {
     event.preventDefault();
     return false;
   }
+  // Block Ctrl+A (Select All)
+  if ((event.ctrlKey || event.metaKey) && (event.key === "a" || event.key === "A")) {
+    event.preventDefault();
+    return false;
+  }
 }, { capture: true });
 
 try {
   console.clear();
   console.log(
-    "%c[DMO Store Security]%c ข้อมูลและรูปภาพทั้งหมดเป็นลิขสิทธิ์ของ DMO Store ห้ามคัดลอก ทำซ้ำ หรือดึงข้อมูลไปใช้ในเชิงพาณิชย์",
+    "%c[DMO Store Security]%c ข้อมูลและรูปภาพทั้งหมดเป็นลิขสิทธิ์ของ DMO Store ห้ามคัดลอก ดัดแปลง หรือดึงข้อมูลไปใช้ในเชิงพาณิชย์",
     "color: #ef4444; font-weight: bold; font-size: 14px;",
     "color: #94a3b8; font-size: 13px;"
   );
