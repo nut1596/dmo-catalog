@@ -55,6 +55,14 @@ body {
   background-color: var(--bg-page);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+input, textarea, .cart-row, #order-summary, .selectable {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 button, input, select {
@@ -312,6 +320,9 @@ main {
   justify-content: center;
   overflow: hidden;
   position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 .card-image img {
   width: 100%;
@@ -319,9 +330,47 @@ main {
   object-fit: contain;
   padding: 14px;
   transition: transform 0.25s ease;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .card:hover .card-image img {
   transform: scale(1.04);
+}
+.image-shield {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: transparent;
+  pointer-events: auto;
+  cursor: default;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.image-watermark {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  z-index: 2;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  padding: 2px 7px;
+  border-radius: 4px;
+  pointer-events: none;
+  user-select: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  text-transform: uppercase;
+  line-height: 1.3;
 }
 .placeholder {
   font-size: 48px;

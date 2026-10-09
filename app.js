@@ -93,7 +93,13 @@ function renderProducts() {
     const imageBox = element("div", "card-image");
     if (product.image && /^assets\/products\/[a-f0-9]{24}\.webp$/.test(product.image)) {
       const image = element("img"); image.src = "./" + product.image;
-      image.alt = product.name; image.loading = "lazy"; imageBox.append(image);
+      image.alt = product.name; image.loading = "lazy";
+      image.setAttribute("draggable", "false");
+      const shield = element("div", "image-shield");
+      shield.setAttribute("aria-hidden", "true");
+      shield.addEventListener("contextmenu", e => e.preventDefault());
+      const watermark = element("span", "image-watermark", "DMO STORE");
+      imageBox.append(image, shield, watermark);
     } else imageBox.append(element("span", "placeholder", "◈"));
     const body = element("div", "card-body");
     if (product.kind === "set") body.append(element("span", "set-badge", "เซ็ตซีล · " + product.category));
@@ -324,3 +330,52 @@ fetch("./catalog.json", {cache: "no-cache"}).then(response => {
   $("#favorite-count").textContent = "(" + favorites.size + ")";
   renderProducts(); renderCart();
 }).catch(() => { message.textContent = "ยังโหลดรายการสินค้าไม่ได้ กรุณาลองใหม่ภายหลัง"; });
+
+// Anti-theft & Scraping Protections
+document.addEventListener("contextmenu", event => {
+  event.preventDefault();
+  return false;
+}, { capture: true });
+
+document.addEventListener("dragstart", event => {
+  event.preventDefault();
+  return false;
+}, { capture: true });
+
+document.addEventListener("keydown", event => {
+  // Block F12
+  if (event.key === "F12" || event.keyCode === 123) {
+    event.preventDefault();
+    return false;
+  }
+  // Block Ctrl+Shift+I / J / C (DevTools) & Mac equivalents
+  if ((event.ctrlKey || event.metaKey) && event.shiftKey &&
+      ["I", "i", "J", "j", "C", "c"].includes(event.key)) {
+    event.preventDefault();
+    return false;
+  }
+  // Block Ctrl+U (View Source) & Mac equivalent
+  if ((event.ctrlKey || event.metaKey) && (event.key === "u" || event.key === "U")) {
+    event.preventDefault();
+    return false;
+  }
+  // Block Ctrl+S (Save Page) & Mac equivalent
+  if ((event.ctrlKey || event.metaKey) && (event.key === "s" || event.key === "S")) {
+    event.preventDefault();
+    return false;
+  }
+  // Block Ctrl+P (Print Page) & Mac equivalent
+  if ((event.ctrlKey || event.metaKey) && (event.key === "p" || event.key === "P")) {
+    event.preventDefault();
+    return false;
+  }
+}, { capture: true });
+
+try {
+  console.clear();
+  console.log(
+    "%c[DMO Store Security]%c ข้อมูลและรูปภาพทั้งหมดเป็นลิขสิทธิ์ของ DMO Store ห้ามคัดลอก ทำซ้ำ หรือดึงข้อมูลไปใช้ในเชิงพาณิชย์",
+    "color: #ef4444; font-weight: bold; font-size: 14px;",
+    "color: #94a3b8; font-size: 13px;"
+  );
+} catch (_) {}
