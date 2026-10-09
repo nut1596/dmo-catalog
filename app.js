@@ -13,6 +13,14 @@ function updateSetLineButtons() {
   document.querySelectorAll("#set-line-filters button").forEach(button =>
     button.classList.toggle("active", button.dataset.line === $("#seal-line").value));
 }
+function updateSealSectionButtons() {
+  document.querySelectorAll("#seal-section-filters button").forEach(button =>
+    button.classList.toggle("active", button.dataset.section === $("#section").value));
+}
+function updateSealLineButtons() {
+  document.querySelectorAll("#seal-line-filters button").forEach(button =>
+    button.classList.toggle("active", button.dataset.line === $("#seal-line").value));
+}
 
 function element(tag, className, content) {
   const node = document.createElement(tag);
@@ -26,12 +34,10 @@ function unitLabel(product) {
     product.kind === "service" ? product.unit : "ชิ้น";
 }
 function defaultQuantity(product) {
-  return product.kind === "seal" ? (product.pack_size || 1000) : product.kind === "money" ?
-    Math.max(1, Number.parseFloat(product.unit) || 1) : 1;
+  return product.kind === "seal" ? (product.pack_size || 1000) : product.kind === "money" ? 1000 : 1;
 }
 function linePrice(product, quantity) {
-  const divisor = product.kind === "seal" ? (product.pack_size || 1000) : product.kind === "money" ?
-    Number.parseFloat(product.unit) || 1 : 1;
+  const divisor = product.kind === "seal" ? (product.pack_size || 1000) : 1;
   return (product.price || 0) * quantity / divisor;
 }
 function quantity(value) {
@@ -43,30 +49,87 @@ function renderProducts() {
   const query = search.value.trim().toLocaleLowerCase("th");
   const line = $("#seal-line").value, section = $("#section").value;
   const availableOnly = $("#available-only").checked;
-  const shown = products.filter(product => (kind === "favorite" ? favorites.has(product.id) :
-    kind === "all" || product.kind === kind) &&
-    (line === "all" || product.category === line) &&
-    (section === "all" || (product.section || "NORMAL") === section) &&
-    (!availableOnly || product.available) &&
-    String(product.name).toLocaleLowerCase("th").includes(query));
+  const shown = products.filter(product => {
+    if (kind === "favorite") {
+      if (!favorites.has(product.id)) return false;
+    } else if (kind === "seal-normal") {
+      if (product.kind !== "seal" || (product.section || "NORMAL") !== "NORMAL") return false;
+    } else if (kind === "seal-base-hard") {
+      if (product.kind !== "seal" || product.section !== "BASE_HARD") return false;
+    } else if (kind === "seal-susa") {
+      if (product.kind !== "seal" || product.section !== "SUSA") return false;
+    } else if (kind !== "all" && product.kind !== kind) {
+      return false;
+    }
+    if (line !== "all" && product.category !== line) return false;
+    if (section !== "all" && (product.section || "NORMAL") !== section) return false;
+    if (availableOnly && !product.available) return false;
+    return String(product.name).toLocaleLowerCase("th").includes(query);
+  });
   const sort = $("#sort").value;
-  shown.sort((a, b) => kind === "all" && a.kind !== b.kind && (a.kind === "set" || b.kind === "set") ?
-    (a.kind === "set" ? -1 : 1) : sort === "price-low" ?
-    ((a.price ?? Infinity) - (b.price ?? Infinity)) || a.name.localeCompare(b.name, "th") :
-    sort === "price-high" ? ((b.price ?? -1) - (a.price ?? -1)) || a.name.localeCompare(b.name, "th") :
-    a.name.localeCompare(b.name, "th"));
+  shown.sort((a, b) => {
+    if (a.available !== b.available) return a.available ? -1 : 1;
+    if (kind === "all" && a.kind !== b.kind && (a.kind === "set" || b.kind === "set")) {
+      return a.kind === "set" ? -1 : 1;
+    }
+    if (sort === "price-low") {
+      return ((a.price ?? Infinity) - (b.price ?? Infinity)) || a.name.localeCompare(b.name, "th");
+    }
+    if (sort === "price-high") {
+      return ((b.price ?? -1) - (a.price ?? -1)) || a.name.localeCompare(b.name, "th");
+    }
+    return a.name.localeCompare(b.name, "th");
+  });
   const fragment = document.createDocumentFragment();
+  let renderedUnavailableDivider = false;
+
   for (const product of shown.slice(0, visibleLimit)) {
+    if (!product.available && !renderedUnavailableDivider) {
+      renderedUnavailableDivider = true;
+      const divider = element("div", "out-of-stock-divider");
+      const info = element("div", "divider-info");
+      const titleRow = element("div", "divider-title-row");
+      titleRow.append(
+        element("span", "divider-badge", "สินค้าหมด"),
+        element("h3", "", "สินค้าหมด (สามารถสอบถามได้)")
+      );
+      const desc = element("p", "", "รายการด้านล่างนี้หมดสต็อกชั่วคราว สามารถติดต่อสอบถามหรือสั่งจองกับทางร้านได้ครับ");
+      info.append(titleRow, desc);
+
+      const contactBtn = element("a", "divider-contact", "💬 ทักแชตสอบถาม ↗");
+      contactBtn.href = "https://m.me/kakachi.kung.5";
+      contactBtn.target = "_blank";
+      contactBtn.rel = "noopener noreferrer";
+
+      divider.append(info, contactBtn);
+      fragment.append(divider);
+    }
+
     const card = element("article", "card" + (product.available ? "" : " unavailable") +
       (product.kind === "set" ? " set-card" : ""));
     const imageBox = element("div", "card-image");
     if (product.image && /^assets\/products\/[a-f0-9]{24}\.webp$/.test(product.image)) {
       const image = element("img"); image.src = "./" + product.image;
-      image.alt = product.name; image.loading = "lazy"; imageBox.append(image);
+      image.alt = product.name; image.loading = "lazy";
+      image.setAttribute("draggable", "false");
+      const shield = element("div", "image-shield");
+      shield.setAttribute("aria-hidden", "true");
+      shield.addEventListener("contextmenu", e => e.preventDefault());
+      const watermark = element("span", "image-watermark", "DMO STORE");
+      imageBox.append(image, shield, watermark);
     } else imageBox.append(element("span", "placeholder", "◈"));
     const body = element("div", "card-body");
-    if (product.kind === "set") body.append(element("span", "set-badge", "เซ็ตซีล · " + product.category));
-    const label = product.kind === "seal" ? product.category + " · " + (sectionNames[product.section] || "ปกติ") :
+    if (product.kind === "set") {
+      body.append(element("span", "set-badge", "เซ็ตซีล · " + product.category));
+    } else if (product.kind === "seal") {
+      if (product.section === "BASE_HARD") {
+        body.append(element("span", "section-badge badge-base-hard", "เบสยาก · ขายเดี่ยวเป็นใบ"));
+      } else if (product.section === "SUSA") {
+        body.append(element("span", "section-badge badge-susa", "ซูซา · ขายเดี่ยวเป็นใบ"));
+      }
+    }
+    const label = product.kind === "seal" ?
+      product.category + " · " + (sectionNames[product.section] || "ปกติ") + (product.pack_size === 1 ? " (ขายเป็นใบ)" : "") :
       product.kind === "set" ? product.category + " · เซ็ตซีล" :
       product.kind === "service" ? "บริการ · " + product.category :
       product.kind === "money" ? "เงิน T" : "ITEM";
@@ -85,21 +148,48 @@ function renderProducts() {
     top.append(title, favorite);
     const selector = element("div", "product-select");
     const input = element("input"); input.type = "number"; input.min = "1";
-    input.max = "1000000"; input.value = defaultQuantity(product);
+    const def = defaultQuantity(product);
+    input.max = "1000000"; input.value = def;
+    input.defaultValue = def;
+    input.setAttribute("value", def);
     input.setAttribute("aria-label", "จำนวน" + unitLabel(product) + "ของ" + product.name);
     const add = element("button", "", "เพิ่มรายการ"); add.type = "button";
-    add.disabled = !(product.price > 0);
-    add.addEventListener("click", () => {
-      const amount = quantity(input.value);
-      if (!amount || (cart.get(product.id) || 0) + amount > 1000000) {
-        input.setCustomValidity("กรุณากรอกจำนวน 1–1,000,000"); input.reportValidity(); return;
-      }
-      input.setCustomValidity(""); cart.set(product.id, (cart.get(product.id) || 0) + amount);
-      renderCart(); $("#copy-status").textContent = "เพิ่ม " + product.name + " แล้ว · ตรวจรายการก่อนคัดลอก";
-    });
+
+    if (!product.available) {
+      add.disabled = true;
+      add.textContent = "หมด (สามารถสอบถามได้)";
+      add.title = "สินค้าหมดสต็อก สามารถทักแชตสอบถามกับทางร้านได้ครับ";
+      input.disabled = true;
+    } else if (!(product.price > 0)) {
+      add.disabled = true;
+      add.textContent = "สอบถามราคา";
+      input.disabled = true;
+    } else {
+      add.disabled = false;
+      add.textContent = "เพิ่มรายการ";
+      input.disabled = false;
+      add.addEventListener("click", () => {
+        const amount = quantity(input.value);
+        if (!amount || (cart.get(product.id) || 0) + amount > 1000000) {
+          input.setCustomValidity("กรุณากรอกจำนวน 1–1,000,000"); input.reportValidity(); return;
+        }
+        input.setCustomValidity("");
+        const currentTotal = (cart.get(product.id) || 0) + amount;
+        cart.set(product.id, currentTotal);
+        renderCart();
+        $("#copy-status").textContent = "เพิ่ม " + product.name + " (" + number.format(currentTotal) + " " + unitLabel(product) + ") แล้ว";
+        add.textContent = "✓ เพิ่มแล้ว (" + number.format(currentTotal) + ")";
+        add.classList.add("added");
+        setTimeout(() => {
+          add.textContent = "เพิ่มรายการ";
+          add.classList.remove("added");
+        }, 900);
+      });
+    }
+
     selector.append(input, add);
     body.append(top, element("div", "category", label), price,
-      element("span", "availability", product.available ? "มีสินค้า" : "สอบถามสต็อก"));
+      element("span", "availability", product.available ? "มีสินค้า" : "หมด (สามารถสอบถามได้)"));
     if (product.kind === "set" && Array.isArray(product.members)) {
       const detail = element("details", "set-members");
       detail.append(element("summary", "", "ดูรายชื่อในเซ็ต " + product.members.length + " ตัว · ตัวละ " +
@@ -113,7 +203,10 @@ function renderProducts() {
     card.append(imageBox, body); fragment.append(card);
   }
   cards.replaceChildren(fragment);
-  $("#count").textContent = "พบ " + shown.length + " รายการ" + (shown.length > visibleLimit ? " · แสดง " + visibleLimit + " รายการแรก" : "");
+  const inStockCount = shown.filter(p => p.available).length;
+  $("#count").textContent = "พบ " + shown.length + " รายการ" +
+    (inStockCount > 0 ? " (มีสินค้า " + inStockCount + " รายการ)" : " (สินค้าหมด)") +
+    (shown.length > visibleLimit ? " · แสดง " + visibleLimit + " รายการแรก" : "");
   $("#show-more").hidden = shown.length <= visibleLimit;
   message.hidden = shown.length > 0;
   if (!shown.length) message.textContent = products.length ? "ไม่พบสินค้าที่ค้นหา" : "ยังไม่มีสินค้าในแค็ตตาล็อก";
@@ -127,7 +220,7 @@ function totals() {
     const value = linePrice(product, amount); subtotal += value;
     if (product.kind === "seal" || product.kind === "set") sealSubtotal += value;
   }
-  const discount = Math.round(subtotal * 5) / 100;
+  const discount = Math.round(sealSubtotal * 5) / 100;
   return {subtotal, discount, total: subtotal - discount,
     reward: Math.floor(sealSubtotal / 100) * 150};
 }
@@ -146,13 +239,15 @@ function renderCart() {
     remove.addEventListener("click", () => { cart.delete(id); renderCart(); });
     const input = element("input"); input.type = "number"; input.min = "1";
     input.max = "1000000"; input.value = amount;
+    input.defaultValue = amount;
+    input.setAttribute("value", amount);
     input.setAttribute("aria-label", "จำนวน" + product.name);
     input.addEventListener("change", () => {
       const next = quantity(input.value);
       if (!next) { input.value = cart.get(id); return; }
       cart.set(id, next); renderCart();
     });
-    row.append(title, remove, input, element("span", "line-total", baht(linePrice(product, amount))));
+    row.append(title, input, remove, element("span", "line-total", baht(linePrice(product, amount))));
     fragment.append(row);
   }
   if (!rows) fragment.append(element("p", "cart-empty", "ยังไม่ได้เลือกสินค้า"));
@@ -207,20 +302,81 @@ $("#filters").addEventListener("click", event => {
   kind = button.dataset.filter;
   document.querySelectorAll("#filters button").forEach(item =>
     item.classList.toggle("active", item === button));
-  if (!(["seal", "set", "favorite"].includes(kind))) $("#seal-line").value = "all";
-  if (kind !== "seal") $("#section").value = "all";
-  $("#section").closest("label").hidden = kind !== "seal";
-  $("#seal-line").closest("label").hidden = !(kind === "seal" || kind === "favorite");
+
+  const isSealKind = ["seal", "seal-normal", "seal-base-hard", "seal-susa"].includes(kind);
+  if (!isSealKind && kind !== "set" && kind !== "favorite") $("#seal-line").value = "all";
+  if (!isSealKind) $("#section").value = "all";
+
+  if (kind === "seal-normal") $("#section").value = "NORMAL";
+  else if (kind === "seal-base-hard") $("#section").value = "BASE_HARD";
+  else if (kind === "seal-susa") $("#section").value = "SUSA";
+
+  $("#section").closest("label").hidden = !isSealKind;
+  $("#seal-line").closest("label").hidden = !(isSealKind || kind === "favorite");
   $("#set-line-filters").hidden = kind !== "set";
+  $("#seal-section-filters").hidden = !isSealKind;
+  $("#seal-line-filters").hidden = !isSealKind;
+
   updateSetLineButtons();
-  $("#catalog-title").textContent = ({all: "สินค้าทั้งหมด", seal: "รายการซีล", item: "รายการไอเทม", service: "รายการบริการ",
-    money: "เงิน T", set: "เซ็ตซีล", favorite: "รายการโปรด"})[kind];
+  updateSealSectionButtons();
+  updateSealLineButtons();
+
+  const titles = {
+    all: "สินค้าทั้งหมด",
+    set: "เซ็ตซีล",
+    seal: "ซีลทั้งหมด",
+    "seal-normal": "ซีลปกติ (ชุดละ 1,000 ใบ)",
+    "seal-base-hard": "ซีลเบสยาก (ขายเดี่ยวเป็นใบ)",
+    "seal-susa": "ซีลซูซา (ขายเดี่ยวเป็นใบ)",
+    item: "รายการไอเทม",
+    service: "รายการบริการ",
+    money: "เงิน T",
+    favorite: "รายการโปรด"
+  };
+  $("#catalog-title").textContent = titles[kind] || "สินค้า";
   visibleLimit = 60;
   renderProducts();
 });
 search.addEventListener("input", () => { visibleLimit = 60; renderProducts(); });
 [$("#seal-line"), $("#section"), $("#sort"), $("#available-only")].forEach(control =>
-  control.addEventListener("change", () => { visibleLimit = 60; updateSetLineButtons(); renderProducts(); }));
+  control.addEventListener("change", () => {
+    visibleLimit = 60;
+    updateSetLineButtons();
+    updateSealSectionButtons();
+    updateSealLineButtons();
+    renderProducts();
+  }));
+$("#seal-section-filters").addEventListener("click", event => {
+  const button = event.target.closest("button[data-section]");
+  if (!button) return;
+  const sec = button.dataset.section;
+  $("#section").value = sec;
+  if (sec === "NORMAL") kind = "seal-normal";
+  else if (sec === "BASE_HARD") kind = "seal-base-hard";
+  else if (sec === "SUSA") kind = "seal-susa";
+  else kind = "seal";
+
+  document.querySelectorAll("#filters button").forEach(item =>
+    item.classList.toggle("active", item.dataset.filter === kind));
+  const titles = {
+    seal: "ซีลทั้งหมด",
+    "seal-normal": "ซีลปกติ (ชุดละ 1,000 ใบ)",
+    "seal-base-hard": "ซีลเบสยาก (ขายเดี่ยวเป็นใบ)",
+    "seal-susa": "ซีลซูซา (ขายเดี่ยวเป็นใบ)"
+  };
+  $("#catalog-title").textContent = titles[kind] || "รายการซีล";
+  visibleLimit = 60;
+  updateSealSectionButtons();
+  renderProducts();
+});
+$("#seal-line-filters").addEventListener("click", event => {
+  const button = event.target.closest("button[data-line]");
+  if (!button) return;
+  $("#seal-line").value = button.dataset.line;
+  visibleLimit = 60;
+  updateSealLineButtons();
+  renderProducts();
+});
 $("#set-line-filters").addEventListener("click", event => {
   const button = event.target.closest("button[data-line]");
   if (!button) return;
@@ -247,6 +403,16 @@ fetch("./catalog.json", {cache: "no-cache"}).then(response => {
     const option = element("option", "", line); option.value = line;
     $("#seal-line").append(option);
   }
+  const sealLinePills = $("#seal-line-filters");
+  sealLinePills.replaceChildren(element("span", "sub-filter-label", "สายซีล:"));
+  const allSealLine = element("button", "active", "ทุกสาย");
+  allSealLine.type = "button"; allSealLine.dataset.line = "all";
+  sealLinePills.append(allSealLine);
+  for (const line of ["AT", "HT", "CT", "HP", "DS", "DE", "EV", "BL"]) {
+    const btn = element("button", "", line);
+    btn.type = "button"; btn.dataset.line = line;
+    sealLinePills.append(btn);
+  }
   const allSets = element("button", "", "ทุกสาย");
   allSets.type = "button"; allSets.dataset.line = "all";
   $("#set-line-filters").append(allSets);
@@ -261,3 +427,52 @@ fetch("./catalog.json", {cache: "no-cache"}).then(response => {
   $("#favorite-count").textContent = "(" + favorites.size + ")";
   renderProducts(); renderCart();
 }).catch(() => { message.textContent = "ยังโหลดรายการสินค้าไม่ได้ กรุณาลองใหม่ภายหลัง"; });
+
+// Anti-theft & Scraping Protections
+document.addEventListener("contextmenu", event => {
+  event.preventDefault();
+  return false;
+}, { capture: true });
+
+document.addEventListener("dragstart", event => {
+  event.preventDefault();
+  return false;
+}, { capture: true });
+
+document.addEventListener("keydown", event => {
+  // Block F12
+  if (event.key === "F12" || event.keyCode === 123) {
+    event.preventDefault();
+    return false;
+  }
+  // Block Ctrl+Shift+I / J / C (DevTools) & Mac equivalents
+  if ((event.ctrlKey || event.metaKey) && event.shiftKey &&
+      ["I", "i", "J", "j", "C", "c"].includes(event.key)) {
+    event.preventDefault();
+    return false;
+  }
+  // Block Ctrl+U (View Source) & Mac equivalent
+  if ((event.ctrlKey || event.metaKey) && (event.key === "u" || event.key === "U")) {
+    event.preventDefault();
+    return false;
+  }
+  // Block Ctrl+S (Save Page) & Mac equivalent
+  if ((event.ctrlKey || event.metaKey) && (event.key === "s" || event.key === "S")) {
+    event.preventDefault();
+    return false;
+  }
+  // Block Ctrl+P (Print Page) & Mac equivalent
+  if ((event.ctrlKey || event.metaKey) && (event.key === "p" || event.key === "P")) {
+    event.preventDefault();
+    return false;
+  }
+}, { capture: true });
+
+try {
+  console.clear();
+  console.log(
+    "%c[DMO Store Security]%c ข้อมูลและรูปภาพทั้งหมดเป็นลิขสิทธิ์ของ DMO Store ห้ามคัดลอก ทำซ้ำ หรือดึงข้อมูลไปใช้ในเชิงพาณิชย์",
+    "color: #ef4444; font-weight: bold; font-size: 14px;",
+    "color: #94a3b8; font-size: 13px;"
+  );
+} catch (_) {}
