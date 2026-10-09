@@ -484,16 +484,22 @@ fetch("./catalog.json", {cache: "no-cache"}).then(response => {
 
 // Anti-theft & Scraping Protections
 document.addEventListener("contextmenu", event => {
+  // Allow right-click context menu only in form inputs/textarea so customers can paste
+  if (event.target.closest("input, textarea")) return;
   event.preventDefault();
   return false;
 }, { capture: true });
 
 document.addEventListener("dragstart", event => {
+  if (event.target.closest("input, textarea")) return;
   event.preventDefault();
   return false;
 }, { capture: true });
 
 document.addEventListener("keydown", event => {
+  // Allow normal typing / editing shortcuts inside inputs
+  if (event.target.closest("input, textarea")) return;
+
   // Block F12
   if (event.key === "F12" || event.keyCode === 123) {
     event.preventDefault();
@@ -520,12 +526,17 @@ document.addEventListener("keydown", event => {
     event.preventDefault();
     return false;
   }
+  // Block Ctrl+A (Select All)
+  if ((event.ctrlKey || event.metaKey) && (event.key === "a" || event.key === "A")) {
+    event.preventDefault();
+    return false;
+  }
 }, { capture: true });
 
 try {
   console.clear();
   console.log(
-    "%c[DMO Store Security]%c ข้อมูลและรูปภาพทั้งหมดเป็นลิขสิทธิ์ของ DMO Store ห้ามคัดลอก ทำซ้ำ หรือดึงข้อมูลไปใช้ในเชิงพาณิชย์",
+    "%c[DMO Store Security]%c ข้อมูลและรูปภาพทั้งหมดเป็นลิขสิทธิ์ของ DMO Store ห้ามคัดลอก ดัดแปลง หรือดึงข้อมูลไปใช้ในเชิงพาณิชย์",
     "color: #ef4444; font-weight: bold; font-size: 14px;",
     "color: #94a3b8; font-size: 13px;"
   );
