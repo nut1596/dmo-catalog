@@ -67,16 +67,26 @@ function unitLabel(product) {
   return product.kind === "seal" ? "ใบ" : product.kind === "set" ? "ชุด" : product.kind === "money" ? "T" :
     product.kind === "service" ? product.unit : "ชิ้น";
 }
+function maxQuantity(product) {
+  if (product && product.kind === "money" && typeof product.stock === "number") {
+    return Math.max(0, product.stock);
+  }
+  return 1000000;
+}
 function defaultQuantity(product) {
-  return product.kind === "seal" ? (product.pack_size || 1000) : product.kind === "money" ? 1000 : 1;
+  if (product && product.kind === "money") {
+    const maxVal = maxQuantity(product);
+    return maxVal > 0 ? Math.min(maxVal, 1000) : 1;
+  }
+  return product.kind === "seal" ? (product.pack_size || 1000) : 1;
 }
 function linePrice(product, quantity) {
   const divisor = product.kind === "seal" ? (product.pack_size || 1000) : 1;
   return (product.price || 0) * quantity / divisor;
 }
-function quantity(value) {
+function quantity(value, max = 1000000) {
   const result = Number(value);
-  return Number.isInteger(result) && result > 0 && result <= 1000000 ? result : null;
+  return Number.isInteger(result) && result > 0 && result <= max ? result : null;
 }
 
 function renderProducts() {
@@ -183,14 +193,29 @@ function renderProducts() {
     top.append(title, favorite);
     const selector = element("div", "product-select");
     const input = element("input"); input.type = "number"; input.min = "1";
+    const maxVal = maxQuantity(product);
     const def = defaultQuantity(product);
-    input.max = "1000000"; input.value = def;
+    input.max = String(maxVal); input.value = def;
     input.defaultValue = def;
     input.setAttribute("value", def);
     input.setAttribute("aria-label", "จำนวน" + unitLabel(product) + "ของ" + product.name);
+    if (product.kind === "money" && typeof product.stock === "number") {
+      input.placeholder = "สูงสุด " + number.format(maxVal);
+    }
     const add = element("button", "", "เพิ่มรายการ"); add.type = "button";
 
-    if (!product.available) {
+    input.addEventListener("input", () => {
+      const val = Number(input.value);
+      if (val > maxVal) {
+        input.setCustomValidity("จำนวนสูงสุดไม่เกิน " + number.format(maxVal) + " " + unitLabel(product));
+      } else if (val < 1) {
+        input.setCustomValidity("กรุณากรอกจำนวนอย่างน้อย 1 " + unitLabel(product));
+      } else {
+        input.setCustomValidity("");
+      }
+    });
+
+    if (!product.available || maxVal < 1) {
       add.disabled = true;
       add.textContent = "หมด (สามารถสอบถามได้)";
       add.title = "สินค้าหมดสต็อก สามารถทักแชตสอบถามกับทางร้านได้ครับ";
@@ -200,12 +225,24 @@ function renderProducts() {
       add.textContent = "เพิ่มรายการ";
       input.disabled = false;
       add.addEventListener("click", () => {
-        const amount = quantity(input.value);
-        if (!amount || (cart.get(product.id) || 0) + amount > 1000000) {
-          input.setCustomValidity("กรุณากรอกจำนวน 1–1,000,000"); input.reportValidity(); return;
+        const amount = quantity(input.value, maxVal);
+        if (!amount) {
+          input.setCustomValidity("กรุณากรอกจำนวน 1–" + number.format(maxVal) + " " + unitLabel(product));
+          input.reportValidity();
+          return;
+        }
+        const currentInCart = cart.get(product.id) || 0;
+        if (currentInCart + amount > maxVal) {
+          const remaining = Math.max(0, maxVal - currentInCart);
+          const msg = remaining > 0
+            ? "ไม่สามารถเพิ่มเกินสต็อกได้ (สต็อกมี " + number.format(maxVal) + " " + unitLabel(product) + ", ในตะกร้ามีแล้ว " + number.format(currentInCart) + " " + unitLabel(product) + ", เพิ่มได้อีกไม่เกิน " + number.format(remaining) + " " + unitLabel(product) + ")"
+            : "ในตะกร้ามีสินค้านี้ครบตามจำนวนสต็อกแล้ว (" + number.format(maxVal) + " " + unitLabel(product) + ")";
+          input.setCustomValidity(msg);
+          input.reportValidity();
+          return;
         }
         input.setCustomValidity("");
-        const currentTotal = (cart.get(product.id) || 0) + amount;
+        const currentTotal = currentInCart + amount;
         cart.set(product.id, currentTotal);
         renderCart();
         $("#copy-status").textContent = "เพิ่ม " + product.name + " (" + number.format(currentTotal) + " " + unitLabel(product) + ") แล้ว";
@@ -219,8 +256,13 @@ function renderProducts() {
     }
 
     selector.append(input, add);
+    const availText = (!product.available || maxVal < 1)
+      ? "หมด (สามารถสอบถามได้)"
+      : (product.kind === "money" && typeof product.stock === "number"
+          ? "มีสินค้า (สต็อก " + number.format(product.stock) + " T)"
+          : "มีสินค้า");
     body.append(top, element("div", "category", label), price,
-      element("span", "availability", product.available ? "มีสินค้า" : "หมด (สามารถสอบถามได้)"));
+      element("span", "availability", availText));
     if (product.kind === "set" && Array.isArray(product.members)) {
       const detail = element("details", "set-members");
       detail.append(element("summary", "", "ดูรายชื่อในเซ็ต " + product.members.length + " ตัว · ตัวละ " +
@@ -248,8 +290,10 @@ function totals() {
   for (const [id, amount] of cart) {
     const product = productById(id);
     if (!product) continue;
+    const validAmount = Math.min(amount, maxQuantity(product));
+    if (validAmount < 1) continue;
     if (!(product.price > 0)) hasInquiry = true;
-    const value = linePrice(product, amount); subtotal += value;
+    const value = linePrice(product, validAmount); subtotal += value;
     if (product.kind === "seal" || product.kind === "set") sealSubtotal += value;
   }
   const discount = Math.round(sealSubtotal * 5) / 100;
@@ -267,6 +311,13 @@ function renderCart() {
   for (const [id, amount] of cart) {
     const product = productById(id);
     if (!product) { cart.delete(id); continue; }
+    const maxVal = maxQuantity(product);
+    let validAmount = amount;
+    if (validAmount > maxVal) {
+      validAmount = maxVal;
+      cart.set(id, validAmount);
+    }
+    if (validAmount < 1) { cart.delete(id); continue; }
     rows++;
     const row = element("div", "cart-row");
     const title = element("div"); title.append(element("strong", "", product.name),
@@ -275,17 +326,27 @@ function renderCart() {
     remove.setAttribute("aria-label", "ลบ " + product.name);
     remove.addEventListener("click", () => { cart.delete(id); renderCart(); });
     const input = element("input"); input.type = "number"; input.min = "1";
-    input.max = "1000000"; input.value = amount;
-    input.defaultValue = amount;
-    input.setAttribute("value", amount);
+    input.max = String(maxVal); input.value = validAmount;
+    input.defaultValue = validAmount;
+    input.setAttribute("value", validAmount);
     input.setAttribute("aria-label", "จำนวน" + product.name);
     input.addEventListener("change", () => {
-      const next = quantity(input.value);
-      if (!next) { input.value = cart.get(id); return; }
-      cart.set(id, next); renderCart();
+      let next = quantity(input.value, maxVal);
+      if (!next) {
+        if (Number(input.value) > maxVal) {
+          next = maxVal;
+          input.value = maxVal;
+          $("#copy-status").textContent = "ปรับจำนวน " + product.name + " เป็นไม่เกินสต็อก (" + number.format(maxVal) + " " + unitLabel(product) + ") แล้ว";
+        } else {
+          input.value = cart.get(id);
+          return;
+        }
+      }
+      cart.set(id, next);
+      renderCart();
     });
     const hasPrice = product.price > 0;
-    const priceText = hasPrice ? baht(linePrice(product, amount)) : "สอบถามราคา";
+    const priceText = hasPrice ? baht(linePrice(product, validAmount)) : "สอบถามราคา";
     row.append(title, input, remove, element("span", "line-total" + (hasPrice ? "" : " inquiry"), priceText));
     fragment.append(row);
   }
@@ -313,13 +374,15 @@ function orderText() {
   for (const [id, amount] of cart) {
     const product = productById(id);
     if (product) {
-      const priceText = product.price > 0 ? baht(linePrice(product, amount)) : "สอบถามราคา";
+      const validAmount = Math.min(amount, maxQuantity(product));
+      if (validAmount < 1) continue;
+      const priceText = product.price > 0 ? baht(linePrice(product, validAmount)) : "สอบถามราคา";
       const tag = product.kind === "seal"
         ? (" [" + (product.section === "BASE_HARD" ? "เบสยาก" : product.section === "SUSA" ? "ซูซา" : product.category) + "]")
         : "";
       lines.push(++index + ". " + product.name +
         tag +
-        " × " + number.format(amount) + " " + unitLabel(product) + " = " +
+        " × " + number.format(validAmount) + " " + unitLabel(product) + " = " +
         priceText + (product.kind === "set" ?
           " (" + product.members.join(", ") + "; ชนิดละ " + number.format(product.leaves_per_seal) + " ใบ)" : "") +
         (product.available ? "" : " (รอตรวจสต็อก)"));
