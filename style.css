@@ -846,6 +846,9 @@ main {
   font-size: 13px;
   margin-top: -2px;
 }
+.line-total.inquiry {
+  color: var(--ink-muted);
+}
 
 /* Calculations Summary */
 .cart-checkout {
