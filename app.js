@@ -13,6 +13,14 @@ function updateSetLineButtons() {
   document.querySelectorAll("#set-line-filters button").forEach(button =>
     button.classList.toggle("active", button.dataset.line === $("#seal-line").value));
 }
+function updateSealSectionButtons() {
+  document.querySelectorAll("#seal-section-filters button").forEach(button =>
+    button.classList.toggle("active", button.dataset.section === $("#section").value));
+}
+function updateSealLineButtons() {
+  document.querySelectorAll("#seal-line-filters button").forEach(button =>
+    button.classList.toggle("active", button.dataset.line === $("#seal-line").value));
+}
 
 function element(tag, className, content) {
   const node = document.createElement(tag);
@@ -43,12 +51,23 @@ function renderProducts() {
   const query = search.value.trim().toLocaleLowerCase("th");
   const line = $("#seal-line").value, section = $("#section").value;
   const availableOnly = $("#available-only").checked;
-  const shown = products.filter(product => (kind === "favorite" ? favorites.has(product.id) :
-    kind === "all" || product.kind === kind) &&
-    (line === "all" || product.category === line) &&
-    (section === "all" || (product.section || "NORMAL") === section) &&
-    (!availableOnly || product.available) &&
-    String(product.name).toLocaleLowerCase("th").includes(query));
+  const shown = products.filter(product => {
+    if (kind === "favorite") {
+      if (!favorites.has(product.id)) return false;
+    } else if (kind === "seal-normal") {
+      if (product.kind !== "seal" || (product.section || "NORMAL") !== "NORMAL") return false;
+    } else if (kind === "seal-base-hard") {
+      if (product.kind !== "seal" || product.section !== "BASE_HARD") return false;
+    } else if (kind === "seal-susa") {
+      if (product.kind !== "seal" || product.section !== "SUSA") return false;
+    } else if (kind !== "all" && product.kind !== kind) {
+      return false;
+    }
+    if (line !== "all" && product.category !== line) return false;
+    if (section !== "all" && (product.section || "NORMAL") !== section) return false;
+    if (availableOnly && !product.available) return false;
+    return String(product.name).toLocaleLowerCase("th").includes(query);
+  });
   const sort = $("#sort").value;
   shown.sort((a, b) => {
     if (a.available !== b.available) return a.available ? -1 : 1;
@@ -102,8 +121,17 @@ function renderProducts() {
       imageBox.append(image, shield, watermark);
     } else imageBox.append(element("span", "placeholder", "◈"));
     const body = element("div", "card-body");
-    if (product.kind === "set") body.append(element("span", "set-badge", "เซ็ตซีล · " + product.category));
-    const label = product.kind === "seal" ? product.category + " · " + (sectionNames[product.section] || "ปกติ") :
+    if (product.kind === "set") {
+      body.append(element("span", "set-badge", "เซ็ตซีล · " + product.category));
+    } else if (product.kind === "seal") {
+      if (product.section === "BASE_HARD") {
+        body.append(element("span", "section-badge badge-base-hard", "เบสยาก · ขายเดี่ยวเป็นใบ"));
+      } else if (product.section === "SUSA") {
+        body.append(element("span", "section-badge badge-susa", "ซูซา · ขายเดี่ยวเป็นใบ"));
+      }
+    }
+    const label = product.kind === "seal" ?
+      product.category + " · " + (sectionNames[product.section] || "ปกติ") + (product.pack_size === 1 ? " (ขายเป็นใบ)" : "") :
       product.kind === "set" ? product.category + " · เซ็ตซีล" :
       product.kind === "service" ? "บริการ · " + product.category :
       product.kind === "money" ? "เงิน T" : "ITEM";
@@ -276,20 +304,81 @@ $("#filters").addEventListener("click", event => {
   kind = button.dataset.filter;
   document.querySelectorAll("#filters button").forEach(item =>
     item.classList.toggle("active", item === button));
-  if (!(["seal", "set", "favorite"].includes(kind))) $("#seal-line").value = "all";
-  if (kind !== "seal") $("#section").value = "all";
-  $("#section").closest("label").hidden = kind !== "seal";
-  $("#seal-line").closest("label").hidden = !(kind === "seal" || kind === "favorite");
+
+  const isSealKind = ["seal", "seal-normal", "seal-base-hard", "seal-susa"].includes(kind);
+  if (!isSealKind && kind !== "set" && kind !== "favorite") $("#seal-line").value = "all";
+  if (!isSealKind) $("#section").value = "all";
+
+  if (kind === "seal-normal") $("#section").value = "NORMAL";
+  else if (kind === "seal-base-hard") $("#section").value = "BASE_HARD";
+  else if (kind === "seal-susa") $("#section").value = "SUSA";
+
+  $("#section").closest("label").hidden = !isSealKind;
+  $("#seal-line").closest("label").hidden = !(isSealKind || kind === "favorite");
   $("#set-line-filters").hidden = kind !== "set";
+  $("#seal-section-filters").hidden = !isSealKind;
+  $("#seal-line-filters").hidden = !isSealKind;
+
   updateSetLineButtons();
-  $("#catalog-title").textContent = ({all: "สินค้าทั้งหมด", seal: "รายการซีล", item: "รายการไอเทม", service: "รายการบริการ",
-    money: "เงิน T", set: "เซ็ตซีล", favorite: "รายการโปรด"})[kind];
+  updateSealSectionButtons();
+  updateSealLineButtons();
+
+  const titles = {
+    all: "สินค้าทั้งหมด",
+    set: "เซ็ตซีล",
+    seal: "ซีลทั้งหมด",
+    "seal-normal": "ซีลปกติ (ชุดละ 1,000 ใบ)",
+    "seal-base-hard": "ซีลเบสยาก (ขายเดี่ยวเป็นใบ)",
+    "seal-susa": "ซีลซูซา (ขายเดี่ยวเป็นใบ)",
+    item: "รายการไอเทม",
+    service: "รายการบริการ",
+    money: "เงิน T",
+    favorite: "รายการโปรด"
+  };
+  $("#catalog-title").textContent = titles[kind] || "สินค้า";
   visibleLimit = 60;
   renderProducts();
 });
 search.addEventListener("input", () => { visibleLimit = 60; renderProducts(); });
 [$("#seal-line"), $("#section"), $("#sort"), $("#available-only")].forEach(control =>
-  control.addEventListener("change", () => { visibleLimit = 60; updateSetLineButtons(); renderProducts(); }));
+  control.addEventListener("change", () => {
+    visibleLimit = 60;
+    updateSetLineButtons();
+    updateSealSectionButtons();
+    updateSealLineButtons();
+    renderProducts();
+  }));
+$("#seal-section-filters").addEventListener("click", event => {
+  const button = event.target.closest("button[data-section]");
+  if (!button) return;
+  const sec = button.dataset.section;
+  $("#section").value = sec;
+  if (sec === "NORMAL") kind = "seal-normal";
+  else if (sec === "BASE_HARD") kind = "seal-base-hard";
+  else if (sec === "SUSA") kind = "seal-susa";
+  else kind = "seal";
+
+  document.querySelectorAll("#filters button").forEach(item =>
+    item.classList.toggle("active", item.dataset.filter === kind));
+  const titles = {
+    seal: "ซีลทั้งหมด",
+    "seal-normal": "ซีลปกติ (ชุดละ 1,000 ใบ)",
+    "seal-base-hard": "ซีลเบสยาก (ขายเดี่ยวเป็นใบ)",
+    "seal-susa": "ซีลซูซา (ขายเดี่ยวเป็นใบ)"
+  };
+  $("#catalog-title").textContent = titles[kind] || "รายการซีล";
+  visibleLimit = 60;
+  updateSealSectionButtons();
+  renderProducts();
+});
+$("#seal-line-filters").addEventListener("click", event => {
+  const button = event.target.closest("button[data-line]");
+  if (!button) return;
+  $("#seal-line").value = button.dataset.line;
+  visibleLimit = 60;
+  updateSealLineButtons();
+  renderProducts();
+});
 $("#set-line-filters").addEventListener("click", event => {
   const button = event.target.closest("button[data-line]");
   if (!button) return;
@@ -315,6 +404,16 @@ fetch("./catalog.json", {cache: "no-cache"}).then(response => {
   for (const line of lines) {
     const option = element("option", "", line); option.value = line;
     $("#seal-line").append(option);
+  }
+  const sealLinePills = $("#seal-line-filters");
+  sealLinePills.replaceChildren(element("span", "sub-filter-label", "สายซีล:"));
+  const allSealLine = element("button", "active", "ทุกสาย");
+  allSealLine.type = "button"; allSealLine.dataset.line = "all";
+  sealLinePills.append(allSealLine);
+  for (const line of ["AT", "HT", "CT", "HP", "DS", "DE", "EV", "BL"]) {
+    const btn = element("button", "", line);
+    btn.type = "button"; btn.dataset.line = line;
+    sealLinePills.append(btn);
   }
   const allSets = element("button", "", "ทุกสาย");
   allSets.type = "button"; allSets.dataset.line = "all";

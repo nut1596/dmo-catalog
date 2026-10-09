@@ -9,10 +9,10 @@
   <title>DMO Store · รายการสินค้า</title>
   <meta name="description" content="แค็ตตาล็อกสินค้า DMO Store เลือกสินค้าและคัดลอกรายการส่งร้าน">
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-  <link rel="stylesheet" href="./style.css?v=security-20261009">
-  <link rel="stylesheet" href="./availability.css?v=security-20261009">
-  <link rel="stylesheet" href="./catalog-controls.css?v=security-20261009">
-  <script src="./app.js?v=security-20261009" defer></script>
+  <link rel="stylesheet" href="./style.css?v=sealcat-20261009">
+  <link rel="stylesheet" href="./availability.css?v=sealcat-20261009">
+  <link rel="stylesheet" href="./catalog-controls.css?v=sealcat-20261009">
+  <script src="./app.js?v=sealcat-20261009" defer></script>
 </head>
 <body oncontextmenu="return false;" ondragstart="return false;">
   <header class="hero">
@@ -31,11 +31,25 @@
       <div class="filters" id="filters" aria-label="หมวดสินค้า">
         <button class="active" data-filter="all" type="button">ทั้งหมด</button>
         <button data-filter="set" type="button">เซ็ตซีล</button>
-        <button data-filter="seal" type="button">ซีล</button>
+        <button data-filter="seal" type="button">ซีลทั้งหมด</button>
+        <button data-filter="seal-normal" type="button">ซีลปกติ (1,000 ใบ)</button>
+        <button data-filter="seal-base-hard" type="button">ซีลเบสยาก (ขายเป็นใบ)</button>
+        <button data-filter="seal-susa" type="button">ซีลซูซา (ขายเป็นใบ)</button>
         <button data-filter="item" type="button">ไอเทม</button>
         <button data-filter="service" type="button">บริการ</button>
         <button data-filter="money" type="button">เงิน T</button>
         <button data-filter="favorite" type="button">รายการโปรด <span id="favorite-count">(0)</span></button>
+      </div>
+      <div id="seal-section-filters" class="seal-section-filters subcategory-filter" aria-label="เลือกประเภทซีล" hidden>
+        <span class="sub-filter-label">ประเภทซีล:</span>
+        <button class="active" data-section="all" type="button">ทั้งหมด</button>
+        <button data-section="NORMAL" type="button">ปกติ (ชุด 1,000 ใบ)</button>
+        <button data-section="BASE_HARD" type="button">เบสยาก (ขายเป็นใบ)</button>
+        <button data-section="SUSA" type="button">ซูซา (ขายเป็นใบ)</button>
+      </div>
+      <div id="seal-line-filters" class="seal-line-filters subcategory-filter" aria-label="เลือกสายซีล" hidden>
+        <span class="sub-filter-label">สายซีล:</span>
+        <button class="active" data-line="all" type="button">ทุกสาย</button>
       </div>
       <div id="set-line-filters" class="set-line-filters" aria-label="เลือกสายเซ็ตซีล" hidden></div>
       <div class="catalog-controls">

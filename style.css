@@ -396,6 +396,33 @@ main {
   font-weight: 700;
   margin-bottom: 8px;
 }
+.section-badge {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+.badge-base-hard {
+  background: #f5f3ff;
+  color: #6b21a8;
+  border: 1px solid #d8b4fe;
+}
+.badge-susa {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+.badge-normal {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
 .card-top {
   display: flex;
   justify-content: space-between;
