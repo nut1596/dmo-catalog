@@ -83,15 +83,12 @@ function renderProducts() {
   const query = search.value.trim().toLocaleLowerCase("th");
   const line = $("#seal-line").value, section = $("#section").value;
   const availableOnly = $("#available-only").checked;
+  const isSealKind = ["seal", "seal-normal", "seal-base-hard", "seal-susa"].includes(kind);
   const shown = products.filter(product => {
     if (kind === "favorite") {
       if (!favorites.has(product.id)) return false;
-    } else if (kind === "seal-normal") {
-      if (product.kind !== "seal" || (product.section || "NORMAL") !== "NORMAL") return false;
-    } else if (kind === "seal-base-hard") {
-      if (product.kind !== "seal" || product.section !== "BASE_HARD") return false;
-    } else if (kind === "seal-susa") {
-      if (product.kind !== "seal" || product.section !== "SUSA") return false;
+    } else if (isSealKind) {
+      if (product.kind !== "seal") return false;
     } else if (kind !== "all" && product.kind !== kind) {
       return false;
     }
@@ -330,26 +327,69 @@ $("#copy-order").addEventListener("click", async () => {
     $("#copy-status").textContent = "คัดลอกแล้ว! กดเปิด Facebook ร้าน แล้ววางข้อความส่งแชต";
   } catch (_) { $("#copy-status").textContent = "คัดลอกไม่สำเร็จ กรุณาอนุญาตคลิปบอร์ดแล้วลองอีกครั้ง"; }
 });
+function applySealSection(sec) {
+  $("#section").value = sec;
+  if (sec === "NORMAL") kind = "seal-normal";
+  else if (sec === "BASE_HARD") kind = "seal-base-hard";
+  else if (sec === "SUSA") kind = "seal-susa";
+  else kind = "seal";
+
+  document.querySelectorAll("#filters button").forEach(item =>
+    item.classList.toggle("active", item.dataset.filter === kind));
+
+  updateSealSectionButtons();
+
+  $("#section").closest("label").hidden = false;
+  $("#seal-line").closest("label").hidden = false;
+  $("#set-line-filters").hidden = true;
+  $("#seal-section-filters").hidden = false;
+  $("#seal-line-filters").hidden = false;
+
+  const titles = {
+    seal: "ซีลทั้งหมด",
+    "seal-normal": "ซีลปกติ (ชุดละ 1,000 ใบ)",
+    "seal-base-hard": "ซีลเบสยาก (ขายเดี่ยวเป็นใบ)",
+    "seal-susa": "ซีลซูซา (ขายเดี่ยวเป็นใบ)"
+  };
+  $("#catalog-title").textContent = titles[kind] || "รายการซีล";
+  visibleLimit = 60;
+  renderProducts();
+}
+
 $("#filters").addEventListener("click", event => {
   const button = event.target.closest("button[data-filter]");
   if (!button) return;
-  kind = button.dataset.filter;
+  const filterKind = button.dataset.filter;
+
+  if (filterKind === "seal-normal") {
+    applySealSection("NORMAL");
+    return;
+  }
+  if (filterKind === "seal-base-hard") {
+    applySealSection("BASE_HARD");
+    return;
+  }
+  if (filterKind === "seal-susa") {
+    applySealSection("SUSA");
+    return;
+  }
+  if (filterKind === "seal") {
+    applySealSection("all");
+    return;
+  }
+
+  kind = filterKind;
   document.querySelectorAll("#filters button").forEach(item =>
     item.classList.toggle("active", item === button));
 
-  const isSealKind = ["seal", "seal-normal", "seal-base-hard", "seal-susa"].includes(kind);
-  if (!isSealKind && kind !== "set" && kind !== "favorite") $("#seal-line").value = "all";
-  if (!isSealKind) $("#section").value = "all";
+  if (kind !== "set" && kind !== "favorite") $("#seal-line").value = "all";
+  $("#section").value = "all";
 
-  if (kind === "seal-normal") $("#section").value = "NORMAL";
-  else if (kind === "seal-base-hard") $("#section").value = "BASE_HARD";
-  else if (kind === "seal-susa") $("#section").value = "SUSA";
-
-  $("#section").closest("label").hidden = !isSealKind;
-  $("#seal-line").closest("label").hidden = !(isSealKind || kind === "favorite");
+  $("#section").closest("label").hidden = true;
+  $("#seal-line").closest("label").hidden = !(kind === "set" || kind === "favorite");
   $("#set-line-filters").hidden = kind !== "set";
-  $("#seal-section-filters").hidden = !isSealKind;
-  $("#seal-line-filters").hidden = !isSealKind;
+  $("#seal-section-filters").hidden = true;
+  $("#seal-line-filters").hidden = true;
 
   updateSetLineButtons();
   updateSealSectionButtons();
@@ -358,10 +398,6 @@ $("#filters").addEventListener("click", event => {
   const titles = {
     all: "สินค้าทั้งหมด",
     set: "เซ็ตซีล",
-    seal: "ซีลทั้งหมด",
-    "seal-normal": "ซีลปกติ (ชุดละ 1,000 ใบ)",
-    "seal-base-hard": "ซีลเบสยาก (ขายเดี่ยวเป็นใบ)",
-    "seal-susa": "ซีลซูซา (ขายเดี่ยวเป็นใบ)",
     item: "รายการไอเทม",
     service: "รายการบริการ",
     money: "เงิน T",
@@ -372,36 +408,25 @@ $("#filters").addEventListener("click", event => {
   renderProducts();
 });
 search.addEventListener("input", () => { visibleLimit = 60; renderProducts(); });
-[$("#seal-line"), $("#section"), $("#sort"), $("#available-only")].forEach(control =>
+
+$("#section").addEventListener("change", () => {
+  applySealSection($("#section").value);
+});
+$("#seal-line").addEventListener("change", () => {
+  visibleLimit = 60;
+  updateSetLineButtons();
+  updateSealLineButtons();
+  renderProducts();
+});
+[$("#sort"), $("#available-only")].forEach(control =>
   control.addEventListener("change", () => {
     visibleLimit = 60;
-    updateSetLineButtons();
-    updateSealSectionButtons();
-    updateSealLineButtons();
     renderProducts();
   }));
 $("#seal-section-filters").addEventListener("click", event => {
   const button = event.target.closest("button[data-section]");
   if (!button) return;
-  const sec = button.dataset.section;
-  $("#section").value = sec;
-  if (sec === "NORMAL") kind = "seal-normal";
-  else if (sec === "BASE_HARD") kind = "seal-base-hard";
-  else if (sec === "SUSA") kind = "seal-susa";
-  else kind = "seal";
-
-  document.querySelectorAll("#filters button").forEach(item =>
-    item.classList.toggle("active", item.dataset.filter === kind));
-  const titles = {
-    seal: "ซีลทั้งหมด",
-    "seal-normal": "ซีลปกติ (ชุดละ 1,000 ใบ)",
-    "seal-base-hard": "ซีลเบสยาก (ขายเดี่ยวเป็นใบ)",
-    "seal-susa": "ซีลซูซา (ขายเดี่ยวเป็นใบ)"
-  };
-  $("#catalog-title").textContent = titles[kind] || "รายการซีล";
-  visibleLimit = 60;
-  updateSealSectionButtons();
-  renderProducts();
+  applySealSection(button.dataset.section);
 });
 $("#seal-line-filters").addEventListener("click", event => {
   const button = event.target.closest("button[data-line]");
