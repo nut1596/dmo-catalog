@@ -104,10 +104,14 @@ function renderProducts() {
       return a.kind === "set" ? -1 : 1;
     }
     if (sort === "price-low") {
-      return ((a.price ?? Infinity) - (b.price ?? Infinity)) || a.name.localeCompare(b.name, "th");
+      const pA = a.price > 0 ? a.price : Infinity;
+      const pB = b.price > 0 ? b.price : Infinity;
+      return (pA - pB) || a.name.localeCompare(b.name, "th");
     }
     if (sort === "price-high") {
-      return ((b.price ?? -1) - (a.price ?? -1)) || a.name.localeCompare(b.name, "th");
+      const pA = a.price > 0 ? a.price : -1;
+      const pB = b.price > 0 ? b.price : -1;
+      return (pB - pA) || a.name.localeCompare(b.name, "th");
     }
     return a.name.localeCompare(b.name, "th");
   });
@@ -191,10 +195,6 @@ function renderProducts() {
       add.textContent = "หมด (สามารถสอบถามได้)";
       add.title = "สินค้าหมดสต็อก สามารถทักแชตสอบถามกับทางร้านได้ครับ";
       input.disabled = true;
-    } else if (!(product.price > 0)) {
-      add.disabled = true;
-      add.textContent = "สอบถามราคา";
-      input.disabled = true;
     } else {
       add.disabled = false;
       add.textContent = "เพิ่มรายการ";
@@ -244,16 +244,22 @@ function renderProducts() {
 }
 
 function totals() {
-  let subtotal = 0, sealSubtotal = 0;
+  let subtotal = 0, sealSubtotal = 0, hasInquiry = false;
   for (const [id, amount] of cart) {
     const product = productById(id);
     if (!product) continue;
+    if (!(product.price > 0)) hasInquiry = true;
     const value = linePrice(product, amount); subtotal += value;
     if (product.kind === "seal" || product.kind === "set") sealSubtotal += value;
   }
   const discount = Math.round(sealSubtotal * 5) / 100;
-  return {subtotal, discount, total: subtotal - discount,
-    reward: Math.floor(sealSubtotal / 100) * 150};
+  return {
+    subtotal,
+    discount,
+    total: subtotal - discount,
+    reward: Math.floor(sealSubtotal / 100) * 150,
+    hasInquiry
+  };
 }
 function renderCart() {
   const fragment = document.createDocumentFragment();
@@ -278,7 +284,9 @@ function renderCart() {
       if (!next) { input.value = cart.get(id); return; }
       cart.set(id, next); renderCart();
     });
-    row.append(title, input, remove, element("span", "line-total", baht(linePrice(product, amount))));
+    const hasPrice = product.price > 0;
+    const priceText = hasPrice ? baht(linePrice(product, amount)) : "สอบถามราคา";
+    row.append(title, input, remove, element("span", "line-total" + (hasPrice ? "" : " inquiry"), priceText));
     fragment.append(row);
   }
   if (!rows) fragment.append(element("p", "cart-empty", "ยังไม่ได้เลือกสินค้า"));
@@ -288,7 +296,9 @@ function renderCart() {
   $("#mobile-cart-count").textContent = String(rows);
   $("#subtotal").textContent = baht(sum.subtotal);
   $("#discount").textContent = "−" + baht(sum.discount);
-  $("#total").textContent = baht(sum.total);
+  $("#total").textContent = sum.total > 0
+    ? (baht(sum.total) + (sum.hasInquiry ? " (+สอบถามราคา)" : ""))
+    : (sum.hasInquiry ? "รอร้านแจ้งราคา" : baht(0));
   $("#reward").textContent = sum.reward ?
     "🎁 D2 ประมาณ " + number.format(sum.reward) + " อัน" :
     "🎁 ซื้อซีลครบทุก 100 ฿ รับ D2 150 อัน";
@@ -302,16 +312,22 @@ function orderText() {
   let index = 0;
   for (const [id, amount] of cart) {
     const product = productById(id);
-    if (product) lines.push(++index + ". " + product.name +
-      (product.kind === "seal" ? " [" + product.category + "]" : "") +
-      " × " + number.format(amount) + " " + unitLabel(product) + " = " +
-      baht(linePrice(product, amount)) + (product.kind === "set" ?
-        " (" + product.members.join(", ") + "; ชนิดละ " + number.format(product.leaves_per_seal) + " ใบ)" : "") +
-      (product.available ? "" : " (รอตรวจสต็อก)"));
+    if (product) {
+      const priceText = product.price > 0 ? baht(linePrice(product, amount)) : "สอบถามราคา";
+      const tag = product.kind === "seal"
+        ? (" [" + (product.section === "BASE_HARD" ? "เบสยาก" : product.section === "SUSA" ? "ซูซา" : product.category) + "]")
+        : "";
+      lines.push(++index + ". " + product.name +
+        tag +
+        " × " + number.format(amount) + " " + unitLabel(product) + " = " +
+        priceText + (product.kind === "set" ?
+          " (" + product.members.join(", ") + "; ชนิดละ " + number.format(product.leaves_per_seal) + " ใบ)" : "") +
+        (product.available ? "" : " (รอตรวจสต็อก)"));
+    }
   }
   const sum = totals();
   lines.push("", "รวมก่อนลด: " + baht(sum.subtotal), "ลด 5%: " + baht(sum.discount),
-    "ยอดประมาณ: " + baht(sum.total));
+    "ยอดประมาณ: " + (sum.total > 0 ? baht(sum.total) + (sum.hasInquiry ? " (+ มีรายการสอบถามราคา)" : "") : (sum.hasInquiry ? "รอร้านแจ้งราคา" : baht(0))));
   if (sum.reward) lines.push("D2 แถมประมาณ " + number.format(sum.reward) + " อัน");
   lines.push("กรุณาตรวจสต็อกและยืนยันยอดก่อนชำระเงิน");
   return lines.join("\n");
