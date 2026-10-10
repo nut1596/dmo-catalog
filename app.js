@@ -169,7 +169,8 @@ function renderProducts() {
     } else imageBox.append(element("span", "placeholder", "◈"));
     const body = element("div", "card-body");
     if (product.kind === "set") {
-      body.append(element("span", "set-badge", "เซ็ตซีล · " + product.category));
+      const badgeText = product.category === "ALL" ? "เซ็ตซีล · ครบทุกสาย" : "เซ็ตซีล · " + product.category;
+      body.append(element("span", "set-badge", badgeText));
     } else if (product.kind === "seal") {
       if (product.section === "BASE_HARD") {
         body.append(element("span", "section-badge badge-base-hard", "เบสยาก · ขายเดี่ยวเป็นใบ"));
@@ -179,7 +180,7 @@ function renderProducts() {
     }
     const label = product.kind === "seal" ?
       product.category + " · " + (sectionNames[product.section] || "ปกติ") + (product.pack_size === 1 ? " (ขายเป็นใบ)" : "") :
-      product.kind === "set" ? product.category + " · เซ็ตซีล" :
+      product.kind === "set" ? (product.category === "ALL" ? "ครบทุกสาย · เซ็ตซีล" : product.category + " · เซ็ตซีล") :
       product.kind === "service" ? "บริการ · " + product.category :
       product.kind === "money" ? "เงิน T" : "ITEM";
     const price = element("div", "price", (product.price > 0 ? baht(product.price) : "สอบถามราคา") + " / " + product.unit);
@@ -610,8 +611,12 @@ fetch("./catalog.json", {cache: "no-cache"}).then(response => {
   const allSets = element("button", "", "ทุกสาย");
   allSets.type = "button"; allSets.dataset.line = "all";
   $("#set-line-filters").append(allSets);
-  for (const line of [...new Set(products.filter(p => p.kind === "set").map(p => p.category))].sort()) {
-    const button = element("button", "", line); button.type = "button";
+  const setLineOrder = { ALL: 0, AT: 1, HT: 2, CT: 3, HP: 4, DS: 5, DE: 6, EV: 7, BL: 8 };
+  const setCategories = [...new Set(products.filter(p => p.kind === "set").map(p => p.category))]
+    .sort((a, b) => (setLineOrder[a] ?? 99) - (setLineOrder[b] ?? 99));
+  for (const line of setCategories) {
+    const label = line === "ALL" ? "ครบทุกสาย (ALL)" : line;
+    const button = element("button", "", label); button.type = "button";
     button.dataset.line = line; $("#set-line-filters").append(button);
   }
   updateSetLineButtons();
