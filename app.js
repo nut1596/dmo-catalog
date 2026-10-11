@@ -592,6 +592,11 @@ fetch("./catalog.json", {cache: "no-cache"}).then(response => {
   return response.json();
 }).then(data => {
   products = Array.isArray(data.products) ? data.products : [];
+  for (const p of products) {
+    if (p && p.kind === "set" && typeof p.price === "number") {
+      p.price = Math.floor(p.price);
+    }
+  }
   const lines = [...new Set(products.filter(p => (p.kind === "seal" || p.kind === "set") && p.category)
     .map(p => p.category))].sort();
   for (const line of lines) {
