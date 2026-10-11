@@ -157,7 +157,7 @@ function renderProducts() {
     const card = element("article", "card" + (product.available ? "" : " unavailable") +
       (product.kind === "set" ? " set-card" : ""));
     const imageBox = element("div", "card-image");
-    if (product.image && /^assets\/products\/[a-f0-9]{24}\.webp$/.test(product.image)) {
+    if (product.image && /^assets\/products\/[a-zA-Z0-9_-]+\.webp$/.test(product.image)) {
       const image = element("img"); image.src = "./" + product.image;
       image.alt = product.name; image.loading = "lazy";
       image.setAttribute("draggable", "false");
