@@ -850,6 +850,99 @@ main {
   color: var(--ink-muted);
 }
 
+/* Dual Inputs for Dungeon/Rounds Services */
+.rounds-dual-inputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 6px;
+  padding: 8px 10px;
+  background: var(--bg-page, #f8fafc);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: var(--radius-sm, 8px);
+}
+.rounds-field {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rounds-field-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-secondary, #475569);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rounds-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.rounds-input-wrap input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 6px 26px 6px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: right;
+  border: 1px solid var(--line, #cbd5e1);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--ink, #0f172a);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.rounds-input-wrap input:focus {
+  border-color: var(--primary, #2563eb);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+.rounds-input-suffix {
+  position: absolute;
+  right: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-muted, #64748b);
+  pointer-events: none;
+}
+.rounds-field-arrow {
+  flex-shrink: 0;
+  color: var(--primary, #2563eb);
+  font-size: 14px;
+  font-weight: 800;
+  padding-top: 16px;
+  user-select: none;
+}
+.product-select.has-dual-inputs {
+  border-top: none;
+  padding-top: 6px;
+}
+.product-select.has-dual-inputs button {
+  width: 100%;
+}
+[data-theme="dark"] .rounds-dual-inputs {
+  background: rgba(30, 41, 59, 0.5);
+  border-color: rgba(148, 163, 184, 0.2);
+}
+[data-theme="dark"] .rounds-input-wrap input {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f8fafc;
+}
+[data-theme="dark"] .rounds-input-wrap input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+[data-theme="dark"] .rounds-field-label {
+  color: #94a3b8;
+}
+[data-theme="dark"] .rounds-input-suffix {
+  color: #64748b;
+}
+
 /* Rounds Calculation Hint on Product Cards */
 .rounds-hint {
   display: flex;
