@@ -67,6 +67,25 @@ function unitLabel(product) {
   return product.kind === "seal" ? "ใบ" : product.kind === "set" ? "ชุด" : product.kind === "money" ? "T" :
     product.kind === "service" ? product.unit : "ชิ้น";
 }
+function productRoundsPerUnit(product) {
+  if (!product) return null;
+  const unit = String(product.unit || "").trim();
+  const name = String(product.name || "").trim();
+
+  // 1. ตรวจจาก unit ก่อน เช่น "4 รอบ"
+  const mUnit = unit.match(/(\d+)\s*รอบ/);
+  if (mUnit) return parseInt(mUnit[1], 10);
+  if (unit.includes("รอบ")) return 1;
+
+  // 2. ตรวจจาก name สำหรับประเภทบริการ/เควส หรือที่มีคำว่า รอบ
+  if (product.kind === "service" || unit === "ครั้ง" || unit === "รอบ" || unit === "เควส") {
+    const mName = name.match(/(\d+)\s*รอบ/);
+    if (mName) return parseInt(mName[1], 10);
+    if (/รอบล่?ะ/.test(name)) return 1;
+  }
+
+  return null;
+}
 function maxQuantity(product) {
   if (product && typeof product.stock === "number") {
     return Math.max(0, product.stock);
@@ -207,6 +226,22 @@ function renderProducts() {
     input.placeholder = "ระบุจำนวน";
     const add = element("button", "", "เพิ่มรายการ"); add.type = "button";
 
+    const roundsPerUnit = productRoundsPerUnit(product);
+    let roundsHint = null;
+    if (roundsPerUnit && product.available && maxVal >= 1) {
+      roundsHint = element("div", "rounds-hint");
+      const updateRounds = () => {
+        const val = Math.max(1, Number(input.value) || 1);
+        const totalRounds = val * roundsPerUnit;
+        const totalCost = linePrice(product, val);
+        const priceStr = product.price > 0 ? baht(totalCost) : "";
+        roundsHint.innerHTML = `🎯 ยอด <strong>${priceStr}</strong> = ได้ทั้งหมด <strong>${number.format(totalRounds)} รอบ</strong>`;
+      };
+      updateRounds();
+      input.addEventListener("input", updateRounds);
+      input.addEventListener("change", updateRounds);
+    }
+
     input.addEventListener("input", () => {
       const val = Number(input.value);
       if (val > maxVal) {
@@ -251,7 +286,11 @@ function renderProducts() {
         const currentTotal = currentInCart + amount;
         cart.set(product.id, currentTotal);
         renderCart();
-        $("#copy-status").textContent = "เพิ่ม " + product.name + " (" + number.format(currentTotal) + " " + unitLabel(product) + ") แล้ว";
+        if (roundsPerUnit) {
+          $("#copy-status").textContent = "เพิ่ม " + product.name + " (" + number.format(currentTotal * roundsPerUnit) + " รอบ · " + baht(linePrice(product, currentTotal)) + ") แล้ว";
+        } else {
+          $("#copy-status").textContent = "เพิ่ม " + product.name + " (" + number.format(currentTotal) + " " + unitLabel(product) + ") แล้ว";
+        }
         add.textContent = "✓ เพิ่มแล้ว (" + number.format(currentTotal) + ")";
         add.classList.add("added");
         setTimeout(() => {
@@ -267,6 +306,9 @@ function renderProducts() {
       : "มีสินค้า";
     body.append(top, element("div", "category", label), price,
       element("span", "availability", availText));
+    if (roundsHint) {
+      body.append(roundsHint);
+    }
     if (product.kind === "set" && Array.isArray(product.members)) {
       const detail = element("details", "set-members");
       detail.append(element("summary", "", "ดูรายชื่อในเซ็ต " + product.members.length + " ตัว · ตัวละ " +
@@ -327,9 +369,18 @@ function renderCart() {
     }
     if (validAmount < 1) { cart.delete(id); continue; }
     rows++;
+    const roundsPerUnit = productRoundsPerUnit(product);
     const row = element("div", "cart-row");
-    const title = element("div"); title.append(element("strong", "", product.name),
-      element("small", "", unitLabel(product)));
+    const title = element("div");
+    if (roundsPerUnit) {
+      const totalRounds = validAmount * roundsPerUnit;
+      const badge = element("small", "cart-rounds-badge");
+      badge.innerHTML = `🎯 รวม <strong>${number.format(totalRounds)} รอบ</strong> (${number.format(validAmount)} × ${number.format(roundsPerUnit)} รอบ)`;
+      title.append(element("strong", "", product.name), badge);
+    } else {
+      title.append(element("strong", "", product.name),
+        element("small", "", unitLabel(product)));
+    }
     const remove = element("button", "", "×"); remove.type = "button";
     remove.setAttribute("aria-label", "ลบ " + product.name);
     remove.addEventListener("click", () => { cart.delete(id); renderCart(); });
@@ -359,7 +410,11 @@ function renderCart() {
       renderCart();
     });
     const hasPrice = product.price > 0;
-    const priceText = hasPrice ? baht(linePrice(product, validAmount)) : "สอบถามราคา";
+    let priceText = hasPrice ? baht(linePrice(product, validAmount)) : "สอบถามราคา";
+    if (hasPrice && roundsPerUnit) {
+      const totalRounds = validAmount * roundsPerUnit;
+      priceText += ` (ได้ ${number.format(totalRounds)} รอบ)`;
+    }
     row.append(title, input, remove, element("span", "line-total" + (hasPrice ? "" : " inquiry"), priceText));
     fragment.append(row);
   }
@@ -393,9 +448,19 @@ function orderText() {
       const tag = product.kind === "seal"
         ? (" [" + (product.section === "BASE_HARD" ? "เบสยาก" : product.section === "SUSA" ? "ซูซา" : product.category) + "]")
         : "";
+      const roundsPerUnit = productRoundsPerUnit(product);
+      let qtyUnitStr = " × " + number.format(validAmount) + " " + unitLabel(product);
+      if (roundsPerUnit) {
+        const totalRounds = validAmount * roundsPerUnit;
+        if (product.unit && product.unit.includes("รอบ")) {
+          qtyUnitStr = " × " + number.format(validAmount) + " (ได้ทั้งหมด " + number.format(totalRounds) + " รอบ)";
+        } else {
+          qtyUnitStr = " × " + number.format(validAmount) + " " + unitLabel(product) + " (ได้ทั้งหมด " + number.format(totalRounds) + " รอบ)";
+        }
+      }
       lines.push(++index + ". " + product.name +
         tag +
-        " × " + number.format(validAmount) + " " + unitLabel(product) + " = " +
+        qtyUnitStr + " = " +
         priceText + (product.kind === "set" ?
           " (" + product.members.join(", ") + "; ชนิดละ " + number.format(product.leaves_per_seal) + " ใบ)" : "") +
         (product.available ? "" : " (รอตรวจสต็อก)"));
