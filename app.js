@@ -227,19 +227,113 @@ function renderProducts() {
     const add = element("button", "", "เพิ่มรายการ"); add.type = "button";
 
     const roundsPerUnit = productRoundsPerUnit(product);
+    let dualInputsContainer = null;
     let roundsHint = null;
     if (roundsPerUnit && product.available && maxVal >= 1) {
+      dualInputsContainer = element("div", "rounds-dual-inputs");
       roundsHint = element("div", "rounds-hint");
-      const updateRounds = () => {
-        const val = Math.max(1, Number(input.value) || 1);
-        const totalRounds = val * roundsPerUnit;
-        const totalCost = linePrice(product, val);
-        const priceStr = product.price > 0 ? baht(totalCost) : "";
-        roundsHint.innerHTML = `🎯 ยอด <strong>${priceStr}</strong> = ได้ทั้งหมด <strong>${number.format(totalRounds)} รอบ</strong>`;
+      const unitPrice = linePrice(product, 1);
+
+      // 1. Box ยอดเงิน (บาท)
+      const priceGroup = element("div", "rounds-field");
+      const priceLabel = element("label", "rounds-field-label", "💰 ยอดเงิน (บาท)");
+      const priceWrap = element("div", "rounds-input-wrap");
+      const inputPrice = element("input", "rounds-input-price");
+      inputPrice.type = "number";
+      inputPrice.min = unitPrice > 0 ? String(unitPrice) : "1";
+      inputPrice.step = unitPrice >= 1 ? "1" : "any";
+      inputPrice.placeholder = "บาท";
+      const priceSuffix = element("span", "rounds-input-suffix", "฿");
+      priceWrap.append(inputPrice, priceSuffix);
+      priceGroup.append(priceLabel, priceWrap);
+
+      // Icon สลับ ⇄
+      const arrowIcon = element("div", "rounds-field-arrow", "⇄");
+      arrowIcon.title = "คำนวณสลับอัตโนมัติ (กรอกบาทหรือรอบก็ได้)";
+
+      // 2. Box จำนวนรอบ (รอบ)
+      const roundsGroup = element("div", "rounds-field");
+      const roundsLabel = element("label", "rounds-field-label", "🎯 จำนวนรอบ");
+      const roundsWrap = element("div", "rounds-input-wrap");
+      const inputRounds = element("input", "rounds-input-rounds");
+      inputRounds.type = "number";
+      inputRounds.min = String(roundsPerUnit);
+      inputRounds.step = String(roundsPerUnit >= 1 ? roundsPerUnit : 1);
+      inputRounds.placeholder = "รอบ";
+      const roundsSuffix = element("span", "rounds-input-suffix", "รอบ");
+      roundsWrap.append(inputRounds, roundsSuffix);
+      roundsGroup.append(roundsLabel, roundsWrap);
+
+      dualInputsContainer.append(priceGroup, arrowIcon, roundsGroup);
+
+      let currentUnits = Math.max(1, Math.min(maxVal, def || 1));
+
+      const updateUI = (source) => {
+        const totalRounds = currentUnits * roundsPerUnit;
+        const totalCost = currentUnits * unitPrice;
+
+        if (source !== "price") {
+          inputPrice.value = totalCost;
+        }
+        if (source !== "rounds") {
+          inputRounds.value = totalRounds;
+        }
+
+        input.value = currentUnits;
+        roundsHint.innerHTML = `🎯 ยอด <strong>${baht(totalCost)}</strong> = ได้ทั้งหมด <strong>${number.format(totalRounds)} รอบ</strong>`;
       };
-      updateRounds();
-      input.addEventListener("input", updateRounds);
-      input.addEventListener("change", updateRounds);
+
+      inputPrice.addEventListener("input", () => {
+        const raw = Number(inputPrice.value);
+        if (raw > 0 && unitPrice > 0) {
+          let u = Math.round(raw / unitPrice);
+          if (u < 1) u = 1;
+          if (u > maxVal) u = maxVal;
+          currentUnits = u;
+          updateUI("price");
+        }
+      });
+
+      inputPrice.addEventListener("change", () => {
+        const raw = Number(inputPrice.value);
+        if (raw <= 0 || isNaN(raw)) {
+          currentUnits = 1;
+        } else if (unitPrice > 0) {
+          let u = Math.round(raw / unitPrice);
+          if (u < 1) u = 1;
+          if (u > maxVal) u = maxVal;
+          currentUnits = u;
+        }
+        updateUI();
+      });
+
+      inputRounds.addEventListener("input", () => {
+        const raw = Number(inputRounds.value);
+        if (raw > 0 && roundsPerUnit > 0) {
+          let u = Math.ceil(raw / roundsPerUnit);
+          if (u < 1) u = 1;
+          if (u > maxVal) u = maxVal;
+          currentUnits = u;
+          updateUI("rounds");
+        }
+      });
+
+      inputRounds.addEventListener("change", () => {
+        const raw = Number(inputRounds.value);
+        if (raw <= 0 || isNaN(raw)) {
+          currentUnits = 1;
+        } else if (roundsPerUnit > 0) {
+          let u = Math.ceil(raw / roundsPerUnit);
+          if (u < 1) u = 1;
+          if (u > maxVal) u = maxVal;
+          currentUnits = u;
+        }
+        updateUI();
+      });
+
+      updateUI();
+      input.style.display = "none";
+      selector.classList.add("has-dual-inputs");
     }
 
     input.addEventListener("input", () => {
@@ -288,10 +382,11 @@ function renderProducts() {
         renderCart();
         if (roundsPerUnit) {
           $("#copy-status").textContent = "เพิ่ม " + product.name + " (" + number.format(currentTotal * roundsPerUnit) + " รอบ · " + baht(linePrice(product, currentTotal)) + ") แล้ว";
+          add.textContent = "✓ เพิ่มแล้ว (" + number.format(currentTotal * roundsPerUnit) + " รอบ)";
         } else {
           $("#copy-status").textContent = "เพิ่ม " + product.name + " (" + number.format(currentTotal) + " " + unitLabel(product) + ") แล้ว";
+          add.textContent = "✓ เพิ่มแล้ว (" + number.format(currentTotal) + ")";
         }
-        add.textContent = "✓ เพิ่มแล้ว (" + number.format(currentTotal) + ")";
         add.classList.add("added");
         setTimeout(() => {
           add.textContent = "เพิ่มรายการ";
@@ -306,6 +401,9 @@ function renderProducts() {
       : "มีสินค้า";
     body.append(top, element("div", "category", label), price,
       element("span", "availability", availText));
+    if (dualInputsContainer) {
+      body.append(dualInputsContainer);
+    }
     if (roundsHint) {
       body.append(roundsHint);
     }
@@ -452,11 +550,7 @@ function orderText() {
       let qtyUnitStr = " × " + number.format(validAmount) + " " + unitLabel(product);
       if (roundsPerUnit) {
         const totalRounds = validAmount * roundsPerUnit;
-        if (product.unit && product.unit.includes("รอบ")) {
-          qtyUnitStr = " × " + number.format(validAmount) + " (ได้ทั้งหมด " + number.format(totalRounds) + " รอบ)";
-        } else {
-          qtyUnitStr = " × " + number.format(validAmount) + " " + unitLabel(product) + " (ได้ทั้งหมด " + number.format(totalRounds) + " รอบ)";
-        }
+        qtyUnitStr = " × " + number.format(validAmount) + " " + unitLabel(product) + " (ได้ทั้งหมด " + number.format(totalRounds) + " รอบ)";
       }
       lines.push(++index + ". " + product.name +
         tag +
