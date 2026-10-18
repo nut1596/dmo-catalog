@@ -746,7 +746,7 @@ if ("IntersectionObserver" in window) {
     $(".mobile-cart").classList.toggle("is-hidden", entries[0].isIntersecting);
   }, {threshold: 0}).observe($("#cart"));
 }
-fetch("./catalog.json", {cache: "no-cache"}).then(response => {
+fetch("./catalog.json?v=" + Date.now(), {cache: "no-cache"}).then(response => {
   if (!response.ok) throw new Error("catalog unavailable");
   return response.json();
 }).then(data => {
