@@ -1,0 +1,15 @@
+/*
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/catalog.json
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
+  Access-Control-Allow-Origin: null
+  Cache-Control: public, max-age=60
+
+/assets/products/*
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
+  Access-Control-Allow-Origin: null
+  Cache-Control: public, max-age=86400
