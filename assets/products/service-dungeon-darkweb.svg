@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" width="500" height="400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#071412"/>
+      <stop offset="50%" stop-color="#0a2924"/>
+      <stop offset="100%" stop-color="#020908"/>
+    </linearGradient>
+    <radialGradient id="matrixGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00e676" stop-opacity="0.45"/>
+      <stop offset="60%" stop-color="#00b0ff" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="500" height="400" fill="url(#bg)"/>
+  <rect width="500" height="400" fill="url(#matrixGlow)"/>
+
+  <!-- Cyber Matrix Web -->
+  <g stroke="#00e676" stroke-opacity="0.3" stroke-width="1.2">
+    <!-- Web Polygons -->
+    <polygon points="250,110 300,140 300,200 250,230 200,200 200,140" fill="none"/>
+    <polygon points="250,80 330,125 330,215 250,260 170,215 170,125" fill="none"/>
+    <polygon points="250,50 360,110 360,230 250,290 140,230 140,110" fill="none"/>
+    <!-- Web Radial Spikes -->
+    <line x1="250" y1="50" x2="250" y2="290"/>
+    <line x1="140" y1="110" x2="360" y2="230"/>
+    <line x1="140" y1="230" x2="360" y2="110"/>
+  </g>
+
+  <!-- Cyber Node Core (Datamon) -->
+  <circle cx="250" cy="170" r="28" fill="#041a16" stroke="#00e676" stroke-width="2.5" filter="url(#glow)"/>
+  <rect x="242" y="162" width="16" height="16" rx="3" fill="#00e676"/>
+
+  <!-- Badges -->
+  <rect x="25" y="24" width="168" height="26" rx="13" fill="#00e676" fill-opacity="0.15" stroke="#00e676" stroke-width="1"/>
+  <circle cx="38" cy="37" r="4" fill="#00e676"/>
+  <text x="50" y="42" font-family="'Kanit', sans-serif" font-size="12" font-weight="600" fill="#b9f6ca">เควสดันเจียนรายสัปดาห์</text>
+
+  <rect x="365" y="24" width="110" height="26" rx="6" fill="#031f1a" stroke="#00e676" stroke-width="1"/>
+  <text x="420" y="42" font-family="'Kanit', sans-serif" font-size="12" font-weight="700" fill="#00e676" text-anchor="middle">🕸️ 3 รอบ จบเควส</text>
+
+  <!-- Title Banner -->
+  <rect x="30" y="300" width="440" height="72" rx="10" fill="#041210" fill-opacity="0.94" stroke="#00e676" stroke-opacity="0.6" stroke-width="1.5"/>
+  <text x="250" y="334" font-family="'Kanit', sans-serif" font-size="22" font-weight="800" fill="#ffffff" text-anchor="middle" filter="url(#glow)">ดาร์คเว็ป 3 รอบ จบเควส</text>
+  <text x="250" y="358" font-family="'Kanit', sans-serif" font-size="13" font-weight="500" fill="#b9f6ca" text-anchor="middle">ดันเจียนดาตามอน เคลียร์ 3 รอบครบวงรอบ · 65 ฿</text>
+
+  <rect x="8" y="8" width="484" height="384" rx="8" fill="none" stroke="#00e676" stroke-opacity="0.3" stroke-width="1.5"/>
+</svg>
