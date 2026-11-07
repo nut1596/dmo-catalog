@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" width="500" height="400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#14061a"/>
+      <stop offset="50%" stop-color="#280c33"/>
+      <stop offset="100%" stop-color="#09020d"/>
+    </linearGradient>
+    <radialGradient id="deviGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#c084fc" stop-opacity="0.5"/>
+      <stop offset="60%" stop-color="#7e22ce" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="500" height="400" fill="url(#bg)"/>
+  <rect width="500" height="400" fill="url(#deviGlow)"/>
+
+  <!-- Devimon Bat Wings -->
+  <path d="M250,170 C220,110 140,90 90,130 C120,160 160,170 190,175 C150,195 120,230 110,255 C160,240 210,215 250,195 Z" fill="#9333ea" opacity="0.8" filter="url(#glow)"/>
+  <path d="M250,170 C280,110 360,90 410,130 C380,160 340,170 310,175 C350,195 380,230 390,255 C340,240 290,215 250,195 Z" fill="#9333ea" opacity="0.8" filter="url(#glow)"/>
+
+  <!-- D-II Device Core Motif -->
+  <rect x="215" y="130" width="70" height="80" rx="14" fill="#0f0314" stroke="#c084fc" stroke-width="2.5" filter="url(#glow)"/>
+  <circle cx="250" cy="170" r="24" fill="#2e1065" stroke="#e9d5ff" stroke-width="1.5"/>
+  <text x="250" y="177" font-family="'Kanit', sans-serif" font-size="16" font-weight="900" fill="#f5d0fe" text-anchor="middle">D-II</text>
+
+  <!-- Badges -->
+  <rect x="25" y="24" width="110" height="26" rx="13" fill="#c084fc" fill-opacity="0.2" stroke="#c084fc" stroke-width="1"/>
+  <circle cx="38" cy="37" r="4" fill="#c084fc"/>
+  <text x="50" y="42" font-family="'Kanit', sans-serif" font-size="12" font-weight="600" fill="#f3e8ff">รับทำเควส</text>
+
+  <rect x="345" y="24" width="130" height="26" rx="6" fill="#1c0724" stroke="#c084fc" stroke-width="1"/>
+  <text x="410" y="42" font-family="'Kanit', sans-serif" font-size="12" font-weight="700" fill="#c084fc" text-anchor="middle">4 รอบ · หา D-II</text>
+
+  <!-- Title Banner -->
+  <rect x="30" y="300" width="440" height="72" rx="10" fill="#09020d" fill-opacity="0.94" stroke="#c084fc" stroke-opacity="0.6" stroke-width="1.5"/>
+  <text x="250" y="334" font-family="'Kanit', sans-serif" font-size="22" font-weight="800" fill="#ffffff" text-anchor="middle" filter="url(#glow)">เควสเดวีมอน (ยาก) 4 รอบ</text>
+  <text x="250" y="358" font-family="'Kanit', sans-serif" font-size="13" font-weight="500" fill="#f3e8ff" text-anchor="middle">พาลงเดวีมอนยาก 4 รอบ หาอุปกรณ์ D-II พร้อมทีมช่วย · 1 ฿/4รอบ</text>
+
+  <rect x="8" y="8" width="484" height="384" rx="8" fill="none" stroke="#c084fc" stroke-opacity="0.3" stroke-width="1.5"/>
+</svg>

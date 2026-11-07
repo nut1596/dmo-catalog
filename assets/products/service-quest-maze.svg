@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" width="500" height="400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1c1106"/>
+      <stop offset="50%" stop-color="#2d1d0c"/>
+      <stop offset="100%" stop-color="#0d0803"/>
+    </linearGradient>
+    <radialGradient id="mazeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.5"/>
+      <stop offset="60%" stop-color="#b45309" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="500" height="400" fill="url(#bg)"/>
+  <rect width="500" height="400" fill="url(#mazeGlow)"/>
+
+  <!-- Maze Labyrinth Isometric Path Motif -->
+  <g stroke="#f59e0b" stroke-width="2.5" fill="none" opacity="0.8" filter="url(#glow)">
+    <path d="M190,110 L310,110 L310,140 L220,140 L220,170 L280,170 L280,200 L250,200 L250,230"/>
+    <rect x="170" y="90" width="160" height="160" rx="8" stroke-dasharray="8,6"/>
+  </g>
+  <!-- Floor Level Badges: B1 - F4 -->
+  <g font-family="'Kanit', sans-serif" font-size="11" font-weight="700" fill="#fef3c7" text-anchor="middle">
+    <rect x="135" y="155" width="36" height="24" rx="4" fill="#78350f" stroke="#f59e0b" stroke-width="1"/>
+    <text x="153" y="172">B1</text>
+    <rect x="330" y="155" width="36" height="24" rx="4" fill="#78350f" stroke="#f59e0b" stroke-width="1"/>
+    <text x="348" y="172">F4</text>
+  </g>
+  <!-- Central Compass / Quest Star -->
+  <polygon points="250,140 256,165 280,170 256,175 250,200 244,175 220,170 244,165" fill="#fffbeb" filter="url(#glow)"/>
+
+  <!-- Badges -->
+  <rect x="25" y="24" width="110" height="26" rx="13" fill="#f59e0b" fill-opacity="0.2" stroke="#f59e0b" stroke-width="1"/>
+  <circle cx="38" cy="37" r="4" fill="#f59e0b"/>
+  <text x="50" y="42" font-family="'Kanit', sans-serif" font-size="12" font-weight="600" fill="#fde68a">รับทำเควส</text>
+
+  <rect x="350" y="24" width="125" height="26" rx="6" fill="#1f1307" stroke="#f59e0b" stroke-width="1"/>
+  <text x="412" y="42" font-family="'Kanit', sans-serif" font-size="12" font-weight="700" fill="#f59e0b" text-anchor="middle">🏰 ครบทุกชั้น B1-F4</text>
+
+  <!-- Title Banner -->
+  <rect x="30" y="300" width="440" height="72" rx="10" fill="#0d0803" fill-opacity="0.94" stroke="#f59e0b" stroke-opacity="0.6" stroke-width="1.5"/>
+  <text x="250" y="334" font-family="'Kanit', sans-serif" font-size="22" font-weight="800" fill="#ffffff" text-anchor="middle" filter="url(#glow)">เควสเขาวงกต B1-F4</text>
+  <text x="250" y="358" font-family="'Kanit', sans-serif" font-size="13" font-weight="500" fill="#fde68a" text-anchor="middle">ลงดันครบทุกชั้น ปลดแมพเขาวงกตจบเควส 100% · 175 ฿</text>
+
+  <rect x="8" y="8" width="484" height="384" rx="8" fill="none" stroke="#f59e0b" stroke-opacity="0.3" stroke-width="1.5"/>
+</svg>
