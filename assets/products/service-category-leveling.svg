@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" width="500" height="400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#051912"/>
+      <stop offset="50%" stop-color="#0a3324"/>
+      <stop offset="100%" stop-color="#020d09"/>
+    </linearGradient>
+    <radialGradient id="lvlGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.55"/>
+      <stop offset="60%" stop-color="#059669" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="500" height="400" fill="url(#bg)"/>
+  <rect width="500" height="400" fill="url(#lvlGlow)"/>
+
+  <!-- EXP Leveling Motif -->
+  <circle cx="250" cy="170" r="75" fill="none" stroke="#10b981" stroke-width="2" stroke-dasharray="8,6" opacity="0.6"/>
+  <polygon points="250,110 270,160 255,160 265,210 235,170 248,170" fill="#a7f3d0" filter="url(#glow)"/>
+
+  <!-- Badges -->
+  <rect x="25" y="24" width="100" height="26" rx="13" fill="#10b981" fill-opacity="0.2" stroke="#10b981" stroke-width="1"/>
+  <circle cx="38" cy="37" r="4" fill="#10b981"/>
+  <text x="50" y="42" font-family="'Kanit', sans-serif" font-size="12" font-weight="600" fill="#a7f3d0">รับเวล</text>
+
+  <!-- Title Banner -->
+  <rect x="30" y="300" width="440" height="72" rx="10" fill="#020d09" fill-opacity="0.94" stroke="#10b981" stroke-opacity="0.6" stroke-width="1.5"/>
+  <text x="250" y="334" font-family="'Kanit', sans-serif" font-size="22" font-weight="800" fill="#ffffff" text-anchor="middle" filter="url(#glow)">บริการรับเก็บเลเวล</text>
+  <text x="250" y="358" font-family="'Kanit', sans-serif" font-size="13" font-weight="500" fill="#a7f3d0" text-anchor="middle">ปั่นเวลไว มีตี้พร้อมลุย รับประกันความปลอดภัยของไอดี</text>
+
+  <rect x="8" y="8" width="484" height="384" rx="8" fill="none" stroke="#10b981" stroke-opacity="0.3" stroke-width="1.5"/>
+</svg>
