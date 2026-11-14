@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" width="500" height="400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="50%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#090d16"/>
+    </linearGradient>
+    <radialGradient id="royalGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.5"/>
+      <stop offset="60%" stop-color="#6366f1" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="500" height="400" fill="url(#bg)"/>
+  <rect width="500" height="400" fill="url(#royalGlow)"/>
+
+  <!-- Royal Knight Aegis / Great Shield Motif -->
+  <polygon points="250,90 320,130 310,210 250,250 190,210 180,130" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5" filter="url(#glow)"/>
+  <polygon points="250,110 300,140 290,195 250,230 210,195 200,140" fill="none" stroke="#818cf8" stroke-width="1.5"/>
+
+  <!-- Holy Cross of Royal Base -->
+  <line x1="250" y1="120" x2="250" y2="220" stroke="#f8fafc" stroke-width="3" filter="url(#glow)"/>
+  <line x1="220" y1="150" x2="280" y2="150" stroke="#f8fafc" stroke-width="3" filter="url(#glow)"/>
+
+  <!-- Winged Flanks -->
+  <path d="M180,140 Q130,120 90,150 Q130,185 180,175 Z" fill="#38bdf8" opacity="0.6"/>
+  <path d="M320,140 Q370,120 410,150 Q370,185 320,175 Z" fill="#38bdf8" opacity="0.6"/>
+
+  <!-- Badges -->
+  <rect x="25" y="24" width="168" height="26" rx="13" fill="#38bdf8" fill-opacity="0.15" stroke="#38bdf8" stroke-width="1"/>
+  <circle cx="38" cy="37" r="4" fill="#38bdf8"/>
+  <text x="50" y="42" font-family="'Kanit', sans-serif" font-size="12" font-weight="600" fill="#bae6fd">เควสดันเจียนรายสัปดาห์</text>
+
+  <rect x="355" y="24" width="120" height="26" rx="6" fill="#0f172a" stroke="#38bdf8" stroke-width="1"/>
+  <text x="415" y="42" font-family="'Kanit', sans-serif" font-size="12" font-weight="700" fill="#38bdf8" text-anchor="middle">🛡️ ระดับยาก 5 รอบ</text>
+
+  <!-- Title Banner -->
+  <rect x="30" y="300" width="440" height="72" rx="10" fill="#090d16" fill-opacity="0.94" stroke="#38bdf8" stroke-opacity="0.6" stroke-width="1.5"/>
+  <text x="250" y="334" font-family="'Kanit', sans-serif" font-size="22" font-weight="800" fill="#ffffff" text-anchor="middle" filter="url(#glow)">รอยัลเบสยาก 5 รอบ</text>
+  <text x="250" y="358" font-family="'Kanit', sans-serif" font-size="13" font-weight="500" fill="#bae6fd" text-anchor="middle">ดันเจียน Royal Base Hard 5 รอบจบเควสแน่นอน · 45 ฿</text>
+
+  <rect x="8" y="8" width="484" height="384" rx="8" fill="none" stroke="#38bdf8" stroke-opacity="0.3" stroke-width="1.5"/>
+</svg>
